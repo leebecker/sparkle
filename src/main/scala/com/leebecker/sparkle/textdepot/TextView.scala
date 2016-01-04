@@ -13,12 +13,12 @@ import scala.math.Ordering.Implicits._
 case class TextViewException(smth:String)  extends Exception
 
 
-trait TextViewAnalysis {
-  def apply(view: String): TextViewAnalysis
+trait TextView {
+  def apply(view: String): TextView
 
-  def apply(): TextViewAnalysis = this.apply(TextViewAnalysis.DefaultViewName)
+  def apply(): TextView = this.apply(TextView.DefaultViewName)
 
-  val views: mutable.HashMap[String, TextViewAnalysis]
+  val views: mutable.HashMap[String, TextView]
 
   val index: mutable.TreeSet[Annotation]
 
@@ -31,11 +31,11 @@ trait TextViewAnalysis {
 
 // Should always traverse back to master
 // every one has its own treeset index
-class TextViewAnalysisImpl(viewName: String, master: Option[TextViewAnalysis]) extends TextViewAnalysis {
-  def this() = this(TextViewAnalysis.DefaultViewName, None)
+class TextViewAnalysisImpl(viewName: String, master: Option[TextView]) extends TextView {
+  def this() = this(TextView.DefaultViewName, None)
 
-  val views: mutable.HashMap[String, TextViewAnalysis] = master match {
-    case None => mutable.HashMap[String, TextViewAnalysis]()
+  val views: mutable.HashMap[String, TextView] = master match {
+    case None => mutable.HashMap[String, TextView]()
     case Some(m) => m.views
   }
 
@@ -43,7 +43,7 @@ class TextViewAnalysisImpl(viewName: String, master: Option[TextViewAnalysis]) e
 
   override def apply(view: String) = this.views(view)
 
-  def createView(viewName: String): TextViewAnalysis = new TextViewAnalysisImpl(viewName, Some(this))
+  def createView(viewName: String): TextView = new TextViewAnalysisImpl(viewName, Some(this))
 
   var _text: Option[String] = None
 
@@ -63,7 +63,7 @@ class TextViewAnalysisImpl(viewName: String, master: Option[TextViewAnalysis]) e
   }
 }
 
-object TextViewAnalysis {
+object TextView {
   val DefaultViewName: String = "_DEFAULT_VIEW"
   //def create(): TextViewAnalysis = new TextViewAnalysisImpl(DefaultViewName)
   //def create(viewName: String): TextViewAnalysis = new TextViewAnalysisImpl(viewName)
