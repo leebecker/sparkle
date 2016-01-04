@@ -1,21 +1,23 @@
 package com.leebecker.sparkle.typesystem
 
-import com.leebecker.sparkle.textdepot.TextAnnotationIndex
+import com.leebecker.sparkle.textdepot.TextView
 
 /**
   * Created by leebecker on 12/30/15.
   */
-class Annotation(_start:Int, _end:Int) extends Ordered[Annotation] {
+class Annotation(_textView: TextView, _start:Int, _end:Int) extends Ordered[Annotation] {
 
   private var _span: Tuple2[Int, Int] = (_start,_end)
+  def textView: TextView = _textView
   def span = _span
   def span_: (value:Tuple2[Int,Int]):Unit = _span = value
   def start: Int = _span._1
   def end: Int = _span._2
-  //def depot: TextDepot
-
   def start_= (value: Int):Unit = _span = (value, _span._2)
   def end_= (value:Int):Unit = _span = (_span._1, value)
+  def coveredText(): String = textView.text().substring(start, end)
+
+  def addToIndex(): Unit = { textView.index += this}
 
   //def coveredText: String = depot.text.substring(start, end)
 
@@ -44,12 +46,13 @@ class Annotation(_start:Int, _end:Int) extends Ordered[Annotation] {
   override def toString(): String = {
     super.toString() + "(%d, %d)".format(this.start, this.end)
   }
+
+
+
+
 }
 
 
 object Annotation {
-  def create = new Annotation(-1,-1)
-
-  def create(start:Int, end:Int) = new Annotation(start, end)
-
+  def create(textView: TextView, start:Int, end:Int) = new Annotation(textView, start, end)
 }
