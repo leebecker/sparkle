@@ -10,8 +10,7 @@ import scala.collection.mutable
 import scala.math.Ordering.Implicits._
 
 
-case class TextViewException(smth:String)  extends Exception
-
+case class TextViewException(msg:String) extends Exception
 
 trait TextView {
   def apply(view: String): TextView
@@ -22,20 +21,23 @@ trait TextView {
 
   val index: mutable.TreeSet[Annotation]
 
+  def createView(viewName: String): TextView
+
   @throws(classOf[Exception])
   def text(): String
 
   @throws(classOf[Exception])
   def text(viewText: String): Unit
+
 }
 
 // Should always traverse back to master
 // every one has its own treeset index
-class TextViewAnalysisImpl(viewName: String, master: Option[TextView]) extends TextView {
+class TextViewImpl(viewName: String, master: Option[TextView]) extends TextView {
   def this() = this(TextView.DefaultViewName, None)
 
   val views: mutable.HashMap[String, TextView] = master match {
-    case None => mutable.HashMap[String, TextView]()
+    case None => mutable.HashMap[String, TextView](TextView.DefaultViewName -> this)
     case Some(m) => m.views
   }
 
@@ -43,7 +45,11 @@ class TextViewAnalysisImpl(viewName: String, master: Option[TextView]) extends T
 
   override def apply(view: String) = this.views(view)
 
-  def createView(viewName: String): TextView = new TextViewAnalysisImpl(viewName, Some(this))
+  override def createView(viewName: String): TextView = {
+    val newView = new TextViewImpl(viewName, Some(this))
+    newView.views(viewName) = newView
+    newView
+  }
 
   var _text: Option[String] = None
 
@@ -65,26 +71,9 @@ class TextViewAnalysisImpl(viewName: String, master: Option[TextView]) extends T
 
 object TextView {
   val DefaultViewName: String = "_DEFAULT_VIEW"
-  //def create(): TextViewAnalysis = new TextViewAnalysisImpl(DefaultViewName)
-  //def create(viewName: String): TextViewAnalysis = new TextViewAnalysisImpl(viewName)
+  def create(): TextView = new TextViewImpl()
 }
 
-
-class TextAnnotationIndex {
-
-  var documentText: String = null
-  var index: mutable.TreeSet[Annotation] = mutable.TreeSet[Annotation]()
-  var views: mutable.HashMap[String, TextAnnotationIndex] = mutable.HashMap[String, TextAnnotationIndex]()
-
-  def apply(): Unit = {
-
-  }
-
-  def apply(view: String): Unit = {
-
-
-  }
-}
 
 object MinOrder extends Ordering[Annotation] {
      def compare(x:Annotation, y:Annotation) = y compare x
