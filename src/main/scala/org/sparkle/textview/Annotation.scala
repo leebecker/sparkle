@@ -13,11 +13,9 @@ class Annotation(_textView: TextView, _start:Int, _end:Int) extends Ordered[Anno
   def end: Int = _span._2
   def start_= (value: Int):Unit = _span = (value, _span._2)
   def end_= (value:Int):Unit = _span = (_span._1, value)
-  def coveredText(): String = textView.text().substring(start, end)
+  def coveredText(): String = textView.text.substring(start, end)
 
   def addToIndex(): Unit = { textView.index += this}
-
-  //def coveredText: String = depot.text.substring(start, end)
 
   def compare(that: Annotation) = {
     // Annotations are sorted in increasing order of their start offset. That is, for any annotations a and b, if
