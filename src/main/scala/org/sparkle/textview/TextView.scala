@@ -1,13 +1,12 @@
-package com.leebecker.sparkle.textdepot
+package org.sparkle.textview
 
 /**
  * Created by leebecker on 12/30/15.
  */
 
-import com.leebecker.sparkle.typesystem.Annotation
+import org.sparkle.textview.Annotation
 
 import scala.collection.mutable
-import scala.math.Ordering.Implicits._
 
 
 case class TextViewException(msg:String) extends Exception

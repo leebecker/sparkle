@@ -1,6 +1,4 @@
-package com.leebecker.sparkle.typesystem
-
-import com.leebecker.sparkle.textdepot.TextView
+package org.sparkle.textview
 
 /**
   * Created by leebecker on 12/30/15.
