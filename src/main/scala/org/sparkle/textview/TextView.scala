@@ -45,14 +45,14 @@ trait TextView {
     * Convenience method for iterator over all Annotation in TextView
     * @return
     */
-  def selectAll(): Iterator[Annotation]
+  def iterator(): Iterator[Annotation]
 
   /**
     * Convenience method for iterator over all Annotations matching specified type
     * @param clazz - class of annotations to match on (e.g. Token, Sentence, etc...)
     * @return
     */
-  def select(clazz: Class[_ <: Annotation]): Iterator[Annotation]
+  def iterator(clazz: Class[_ <: Annotation]): Iterator[Annotation]
 
   /**
     * Get an iterator of all Annotations of specified type between start and end
@@ -61,7 +61,7 @@ trait TextView {
     * @param end
     * @return
     */
-  def selectCovered(clazz: Class[_ <: Annotation], start: Int, end: Int): Iterator[Annotation]
+  def covered(clazz: Class[_ <: Annotation], start: Int, end: Int): Iterator[Annotation]
 
   /**
     * Iterator of all [[org.sparkle.textview.Annotation]]s matching type covered by specified annotation
@@ -69,8 +69,9 @@ trait TextView {
     * @param coveringAnnotation
     * @return
     */
-  def selectCovered(clazz: Class[_ <: Annotation], coveringAnnotation: Annotation): Iterator[Annotation]
+  def covered(clazz: Class[_ <: Annotation], coveringAnnotation: Annotation): Iterator[Annotation]
 
+  def preceding(clazz: Class[_ <: Annotation])
 }
 
 /**
@@ -113,18 +114,19 @@ class TextViewImpl(viewName: String, master: Option[TextView]) extends TextView 
     }
   }
 
-  override def selectAll(): Iterator[Annotation] = this.index.iterator
+  override def iterator(): Iterator[Annotation] = this.index.iterator
 
-  override def select(clazz: Class[_ <: Annotation]): Iterator[Annotation] =
-    selectAll.withFilter(x=>clazz.isInstance(x))
+  override def iterator(clazz: Class[_ <: Annotation]): Iterator[Annotation] =
+    iterator.withFilter(x=>clazz.isInstance(x))
 
-  override def selectCovered(clazz: Class[_ <: Annotation], start: Int, end: Int): Iterator[Annotation] =
-    select(clazz)
+  override def covered(clazz: Class[_ <: Annotation], start: Int, end: Int): Iterator[Annotation] =
+    iterator(clazz)
       .withFilter(annotation => annotation.start >= start)
       .withFilter(annotation => annotation.end <= end)
 
-  override def selectCovered(clazz: Class[_ <: Annotation], coveringAnnotation: Annotation): Iterator[Annotation] =
-    selectCovered(clazz, coveringAnnotation.start, coveringAnnotation.end)
+  override def covered(clazz: Class[_ <: Annotation], coveringAnnotation: Annotation): Iterator[Annotation] =
+    covered(clazz, coveringAnnotation.start, coveringAnnotation.end)
+
 }
 
 /**

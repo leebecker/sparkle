@@ -47,8 +47,8 @@ class TextViewSpec extends FlatSpec with Matchers {
     a1.addToIndex()
     val a2 = Annotation.create(tv, 0, 4)
     a2.addToIndex()
-    tv.select(classOf[Annotation]).size should be (2)
-    tv.selectAll().size should be (2)
+    tv.iterator(classOf[Annotation]).size should be (2)
+    tv.iterator().size should be (2)
   }
 
   it should "select by covered type" in {
@@ -60,8 +60,8 @@ class TextViewSpec extends FlatSpec with Matchers {
     a1.addToIndex()
     a2.addToIndex()
 
-    tv.select(classOf[Annotation]).size should be (2)
-    tv.select(classOf[FooAnnotation]).size should be (1)
+    tv.iterator(classOf[Annotation]).size should be (2)
+    tv.iterator(classOf[FooAnnotation]).size should be (1)
   }
 
   it should "sort annotation by offset start, then by decreasing size of span" in {
@@ -83,9 +83,9 @@ class TextViewSpec extends FlatSpec with Matchers {
     token.addToIndex()
     val sentence = new Sentence(tv, 0, tv.text.length)
     sentence.addToIndex()
-    tv.selectAll().toList.head should be (sentence)
+    tv.iterator().toList.head should be (sentence)
 
-    val tokens = tv.selectCovered(classOf[Token], sentence).toList
+    val tokens = tv.covered(classOf[Token], sentence).toList
     tokens.map(t=>t.coveredText())
       .zip(List("This", "is", "a", "sentence."))
       .foreach{pair => pair._1 should be (pair._2)}
