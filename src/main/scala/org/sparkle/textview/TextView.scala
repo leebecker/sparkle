@@ -52,7 +52,7 @@ trait TextView {
     * @param clazz - class of annotations to match on (e.g. Token, Sentence, etc...)
     * @return
     */
-  def select(clazz: Class[_ >: Annotation]): Iterator[Annotation]
+  def select(clazz: Class[_ <: Annotation]): Iterator[Annotation]
 
   /**
     * Get an iterator of all Annotations of specified type between start and end
@@ -61,7 +61,7 @@ trait TextView {
     * @param end
     * @return
     */
-  def selectCovered(clazz: Class[_ >: Annotation], start: Int, end: Int): Iterator[Annotation]
+  def selectCovered(clazz: Class[_ <: Annotation], start: Int, end: Int): Iterator[Annotation]
 
   /**
     * Iterator of all [[org.sparkle.textview.Annotation]]s matching type covered by specified annotation
@@ -69,7 +69,7 @@ trait TextView {
     * @param coveringAnnotation
     * @return
     */
-  def selectCovered(clazz: Class[_ >: Annotation], coveringAnnotation: Annotation): Iterator[Annotation]
+  def selectCovered(clazz: Class[_ <: Annotation], coveringAnnotation: Annotation): Iterator[Annotation]
 
 }
 
@@ -115,15 +115,15 @@ class TextViewImpl(viewName: String, master: Option[TextView]) extends TextView 
 
   override def selectAll(): Iterator[Annotation] = this.index.iterator
 
-  override def select(clazz: Class[_ >: Annotation]): Iterator[Annotation] =
+  override def select(clazz: Class[_ <: Annotation]): Iterator[Annotation] =
     selectAll.withFilter(x=>clazz.isInstance(x))
 
-  override def selectCovered(clazz: Class[_ >: Annotation], start: Int, end: Int): Iterator[Annotation] =
+  override def selectCovered(clazz: Class[_ <: Annotation], start: Int, end: Int): Iterator[Annotation] =
     select(clazz)
       .withFilter(annotation => annotation.start >= start)
       .withFilter(annotation => annotation.end <= end)
 
-  override def selectCovered(clazz: Class[_ >: Annotation], coveringAnnotation: Annotation): Iterator[Annotation] =
+  override def selectCovered(clazz: Class[_ <: Annotation], coveringAnnotation: Annotation): Iterator[Annotation] =
     selectCovered(clazz, coveringAnnotation.start, coveringAnnotation.end)
 }
 
