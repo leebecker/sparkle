@@ -47,7 +47,6 @@ class TextViewSpec extends FlatSpec with Matchers {
     a1.addToIndex()
     val a2 = Annotation.create(tv, 0, 4)
     a2.addToIndex()
-    println(tv.index)
     tv.select(classOf[Annotation]).size should be (2)
     tv.selectAll().size should be (2)
   }
@@ -84,7 +83,11 @@ class TextViewSpec extends FlatSpec with Matchers {
     token.addToIndex()
     val sentence = new Sentence(tv, 0, tv.text.length)
     sentence.addToIndex()
-    tv.index.foreach(println)
+    tv.selectAll().toList.head should be (sentence)
 
+    val tokens = tv.selectCovered(classOf[Token], sentence).toList
+    tokens.map(t=>t.coveredText())
+      .zip(List("This", "is", "a", "sentence."))
+      .foreach{pair => pair._1 should be (pair._2)}
   }
 }
