@@ -70,8 +70,6 @@ trait TextView {
     * @return
     */
   def covered(clazz: Class[_ <: Annotation], coveringAnnotation: Annotation): Iterator[Annotation]
-
-  def preceding(clazz: Class[_ <: Annotation])
 }
 
 /**
