@@ -85,6 +85,57 @@
             <version>1.9.6</version>
         </dependency>
 
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.emory.clir</groupId>
+            <artifactId>clearnlp</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+
+        <!--  ClearNLP dictionaries -->
+        <dependency>
+            <groupId>edu.emory.clir</groupId>
+            <artifactId>clearnlp-dictionary</artifactId>
+            <version>3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.emory.clir</groupId>
+            <artifactId>clearnlp-global-lexica</artifactId>
+            <version>3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.emory.clir</groupId>
+            <artifactId>clearnlp-general-en-ner-gazetteer</artifactId>
+            <version>3.0</version>
+        </dependency>
+
+        <!--  ClearNLP models -->
+        <dependency>
+            <groupId>edu.emory.clir</groupId>
+            <artifactId>clearnlp-general-en-pos</artifactId>
+            <version>3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.emory.clir</groupId>
+            <artifactId>clearnlp-general-en-dep</artifactId>
+            <version>3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.emory.clir</groupId>
+            <artifactId>clearnlp-general-en-ner</artifactId>
+            <version>3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.emory.clir</groupId>
+            <artifactId>clearnlp-general-en-srl</artifactId>
+            <version>3.0</version>
+        </dependency>
+
 
         <!-- Test dependencies -->
         <dependency>
