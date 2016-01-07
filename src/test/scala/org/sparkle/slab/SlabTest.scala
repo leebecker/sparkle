@@ -2,6 +2,8 @@ package org.sparkle.slab
 
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import org.sparkle.typesystem.basic.{Sentence, Token}
+import org.sparkle.typesystem.Span
 
 class SlabTest extends FunSuite {
 

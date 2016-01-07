@@ -1,8 +1,16 @@
 package org.sparkle.slab
 
+import org.sparkle.typesystem.Span
+
 import scala.reflect.ClassTag
 import java.net.URL
 
+/**
+  * Shameless adapted from Scala NLP chalk
+  * @tparam ContentType
+  * @tparam BaseAnnotationType
+  * @tparam AnnotationTypes
+  */
 trait Slab[ContentType, BaseAnnotationType, +AnnotationTypes <: BaseAnnotationType] {
 
   val content: ContentType
@@ -36,46 +44,8 @@ abstract class SlabAnnotationOps[ContentType, BaseAnnotationType, AnnotationType
   def following[A >: AnnotationTypes <: BaseAnnotationType: ClassTag] = this.slab.following[A](this.annotation)
 }
 
-// =========================
-// Annotation infrastructure
-// =========================
-trait Span {
-  val begin: Int
-  val end: Int
-}
 
-object Span {
-  implicit class SpanInStringSlab(val span: Span) extends AnyVal {
-    def in[AnnotationTypes <: Span](slab: Slab.StringSlab[AnnotationTypes]) =
-      new StringSpanAnnotationOps(this.span, slab)
-  }
 
-  class StringSpanAnnotationOps[AnnotationType >: AnnotationTypes <: Span: ClassTag, AnnotationTypes <: Span](
-    annotation: AnnotationType,
-    slab: Slab.StringSlab[AnnotationTypes])
-    extends SlabAnnotationOps[String, Span, AnnotationType, AnnotationTypes](annotation, slab) {
-    def content = this.slab.content.substring(this.annotation.begin, this.annotation.end)
-  }
-
-  implicit object StringAnnotationHasBounds extends Slab.HasBounds[Span] {
-    def covers(annotation1: Span, annotation2: Span): Boolean =
-      annotation1.begin <= annotation2.begin && annotation2.end <= annotation1.end
-    def follows(annotation1: Span, annotation2: Span): Boolean =
-      annotation2.end <= annotation1.begin
-    def precedes(annotation1: Span, annotation2: Span): Boolean =
-      annotation1.end <= annotation2.begin
-  }
-}
-
-// ===========
-// Annotations
-// ===========
-case class Source(begin: Int, end: Int, url: URL) extends Span
-case class Sentence(begin: Int, end: Int, id: Option[String] = None) extends Span
-case class Segment(begin: Int, end: Int, id: Option[String] = None) extends Span
-case class Token(begin: Int, end: Int, id: Option[String] = None) extends Span
-case class PartOfSpeech(begin: Int, end: Int, tag: String, id: Option[String] = None) extends Span
-case class EntityMention(begin: Int, end: Int, entityType: String, id: Option[String] = None) extends Span
 
 
 object Slab {
@@ -95,14 +65,14 @@ object Slab {
     def follows(annotation1: AnnotationType, annotation2: AnnotationType): Boolean
   }
 
-  private[slab] class HorribleInefficientSlab[ContentType, BaseAnnotationType, AnnotationTypes <: BaseAnnotationType](
+  private[Slab] class HorribleInefficientSlab[ContentType, BaseAnnotationType, AnnotationTypes <: BaseAnnotationType](
     val content: ContentType,
     val _annotations: Seq[Any] = Seq.empty)(
     implicit hasBounds: HasBounds[BaseAnnotationType])
     extends Slab[ContentType, BaseAnnotationType, AnnotationTypes] {
 
     def ++[AnnotationType](annotations: Iterator[AnnotationType]): Slab[ContentType, BaseAnnotationType, AnnotationTypes with AnnotationType] =
-    // FIXME: this should keep the annotations sorted by offset
+      // FIXME: this should keep the annotations sorted by offset
       new HorribleInefficientSlab(this.content, this._annotations ++ annotations)
 
     def iterator[A >: AnnotationTypes <: BaseAnnotationType: ClassTag]: Iterator[A] =
