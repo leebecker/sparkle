@@ -24,6 +24,12 @@ trait SentenceSegmenterAndTokenizerBase extends StringAnalysisFunction[Any, Sent
   }
 }
 
+/**
+  * SparkLE wrapper for ClearNLP Sentence Segmenter + Tokenizer Combo <p>
+  *
+  * Prerequisites: StringSlab object <br>
+  * Outputs: new StringSlab object with Sentence and Token annotations <br>
+  */
 object SentenceSegmenterAndTokenizer extends SentenceSegmenterAndTokenizerBase {
   // FIXME parameterize language code and pre-load tokenizer
   val defaultLanguageCode = TLanguage.ENGLISH.toString
