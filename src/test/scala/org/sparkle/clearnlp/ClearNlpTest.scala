@@ -41,7 +41,7 @@ class ClearNlpTest extends FunSuite {
     val tokensInSentence3 = slab.covered[Token](sentences(3)._1).toList
     assert(tokensAfterToken18.map(spanAnnotationToText) === tokensInSentence3.map(spanAnnotationToText))
 
-    val posTagsInSentence0 = slab.covered[PartOfSpeech](sentences.head._1).toList
-    assert(posTagsInSentence0.map{ case(span, pos) => pos.tag} === List("DT", "VBZ", "NN", "CD", "."))
+    val posTagsInSentence0 = tokensInSentence0.map{ case (span, token) => token.pos.get }
+    assert(posTagsInSentence0 === List("DT", "VBZ", "NN", "CD", "."))
   }
 }

@@ -14,9 +14,9 @@ import scala.collection.JavaConverters._
   * SparkLE wrapper for ClearNLP POS Tagger <p>
   *
   * Prerequisites: Slab object with Sentence and Token annotations <br>
-  * Outputs: new Slab object with Sentence and Token and PartOfSpeech annotations <br>
+  * Outputs: new Slab object with Sentence and Tokens with pos field set <br>
   */
-object PosTagger extends StringAnalysisFunction[Sentence with Token, PartOfSpeech] with Serializable {
+object PosTagger extends StringAnalysisFunction[Sentence with Token, Token] with Serializable {
   val defaultLanguageCode = TLanguage.ENGLISH.toString
   val defaultModelPath = "general-en-pos.xz"
   val defaultWindow = classOf[Sentence]
@@ -24,18 +24,25 @@ object PosTagger extends StringAnalysisFunction[Sentence with Token, PartOfSpeec
   val paths = "brown-rcv1.clean.tokenized-CoNLL03.txt-c1000-freq1.txt.xz" :: Nil
   GlobalLexica.initDistributionalSemanticsWords(paths)
 
-  def apply[In <: Token with Sentence](slab: StringSlab[In]): StringSlab[In with PartOfSpeech] =  {
-    val posTagSpans = slab.iterator[Sentence].flatMap{
+  def apply[In <: Token with Sentence](slab: StringSlab[In]): StringSlab[In with Token] =  {
+    val posTaggedTokenSpans = slab.iterator[Sentence].flatMap{
       case(sentenceSpan, _) =>
         val tokens = slab.covered[Token](sentenceSpan)
         val tokenStrings = tokens.map { case (tokenSpan, _) => slab.spanned(tokenSpan) }
+
+        // Run ClearNLP pos tagger
         val clearNlpDepTree = new DEPTree(tokenStrings)
         tagger.process(clearNlpDepTree)
+        // Create copy of existing tokens with POS tags
         tokens.zip(clearNlpDepTree).map {
-          case ((span, token), depnode) => (Span(span.begin, span.end), PartOfSpeech(tag=depnode.getPOSTag))
+          case ((span, token), depnode) => (Span(span.begin, span.end), token.copy(pos=Option(depnode.getPOSTag)))
         }
     }
-    slab.addLayer[PartOfSpeech](posTagSpans)
+
+    // Remove old tokens and add new pos-tagged ones to slab
+    // FIXME - potentially dangerous if operating over specialized windows
+    val res = slab.removeLayer[Token].addLayer[Token](posTaggedTokenSpans)
+    res
   }
 
 }
