@@ -16,7 +16,7 @@ class ClearNlpTest extends FunSuite {
   // =========
   test("ClearNLP sentence segmentation and tokenization test") {
 
-    val pipeline = SentenceSegmenterAndTokenizer andThen PosTagger
+    val pipeline = SentenceSegmenterAndTokenizer andThen PosTagger andThen MpAnalyzer
     val slab = pipeline(Slab( """This is sentence one.  Do you like sentence 2?  Mr. and Dr. Takahashi want to leave!  Go now!"""))
     val sentences = slab.iterator[Sentence].toList
     assert(sentences.map{case (span, _) => slab.spanned(span)} === List(
@@ -43,5 +43,8 @@ class ClearNlpTest extends FunSuite {
 
     val posTagsInSentence0 = tokensInSentence0.map{ case (span, token) => token.pos.get }
     assert(posTagsInSentence0 === List("DT", "VBZ", "NN", "CD", "."))
+
+    val lemmasInSentence0 = tokensInSentence0.map{ case (span, token) => token.lemma.get }
+    assert(lemmasInSentence0 === List("this", "be", "sentence", "#crd#", "."))
   }
 }
