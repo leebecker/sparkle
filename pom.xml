@@ -91,6 +91,23 @@
             <version>2.4</version>
         </dependency>
 
+
+        <!-- scalanlp/epic for SLAB objects -->
+        <!-- Uncomment the following dependency when epic has a new release.  For now use copy of code locally-->
+        <!--
+        <dependency>
+            <groupId>org.scalanlp</groupId>
+            <artifactId>epic_2.10</artifactId>
+            <version>0.3.1</version>
+        </dependency>
+        -->
+        <!-- Needed by scala-nlp-epic code -->
+        <dependency>
+            <groupId>org.spire-math</groupId>
+            <artifactId>spire_2.10</artifactId>
+            <version>0.11.0</version>
+        </dependency>
+
         <dependency>
             <groupId>edu.emory.clir</groupId>
             <artifactId>clearnlp</artifactId>

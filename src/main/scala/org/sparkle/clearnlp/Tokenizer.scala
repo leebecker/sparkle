@@ -17,7 +17,7 @@ import scala.collection.JavaConversions._
   * Created by leebecker on 1/7/16.
   */
 
-object ClearNlp {
+object Tokenizer {
   // FIXME parameterize language code and pre-load tokenizer
   val languageCode = "ENGLISH"
   val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(languageCode));
