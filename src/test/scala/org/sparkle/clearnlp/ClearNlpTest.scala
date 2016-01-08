@@ -2,7 +2,7 @@ package org.sparkle.clearnlp
 
 import org.scalatest.FunSuite
 import org.sparkle.slab.{Slab, StringSlab}
-import org.sparkle.typesystem.basic.{Token, Sentence, Span}
+import org.sparkle.typesystem.basic.{PartOfSpeech, Token, Sentence, Span}
 
 class ClearNlpTest extends FunSuite {
 
@@ -16,7 +16,7 @@ class ClearNlpTest extends FunSuite {
   // =========
   test("ClearNLP sentence segmentation and tokenization test") {
 
-    val pipeline = SentenceSegmenterAndTokenizer //andThen PosTagger.posTagger
+    val pipeline = SentenceSegmenterAndTokenizer andThen PosTagger
     val slab = pipeline(Slab( """This is sentence one.  Do you like sentence 2?  Mr. and Dr. Takahashi want to leave!  Go now!"""))
     val sentences = slab.iterator[Sentence].toList
     assert(sentences.map{case (span, _) => slab.spanned(span)} === List(
@@ -40,5 +40,8 @@ class ClearNlpTest extends FunSuite {
     val tokensAfterToken18 = slab.following[Token](tokens(18)._1).toList
     val tokensInSentence3 = slab.covered[Token](sentences(3)._1).toList
     assert(tokensAfterToken18.map(spanAnnotationToText) === tokensInSentence3.map(spanAnnotationToText))
+
+    val posTagsInSentence0 = slab.covered[PartOfSpeech](sentences.head._1).toList
+    assert(posTagsInSentence0.map{ case(span, pos) => pos.tag} === List("DT", "VBZ", "NN", "CD", "."))
   }
 }
