@@ -1,9 +1,8 @@
-package org.spakle.clearnlp
+package org.sparkle.clearnlp
 
-import epic.slab.{Token, Sentence, Slab, StringSlab}
-import epic.trees.Span
 import org.scalatest.FunSuite
-import org.sparkle.clearnlp.{SentenceSegmenterAndTokenizer}
+import org.sparkle.slab.{Slab, StringSlab}
+import org.sparkle.typesystem.basic.{Token, Sentence, Span}
 
 class ClearNlpTest extends FunSuite {
 

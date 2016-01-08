@@ -1,6 +1,6 @@
-package epic.slab
+package org.sparkle.slab
 
-import epic.trees.Span
+import org.sparkle.typesystem.basic.Span
 
 /**
   * Adapted from scala-nlp's epic and chalk projects
@@ -42,7 +42,6 @@ object StringIdentityAnalyzer extends StringAnalysisFunction[Any, Any] {
 }
 
 object AnalysisPipeline {
-  import AnnotatedSpan._
 
   // added only to demonstrate necessity of [I] parameter on analyzers
   private[AnalysisPipeline] case class Document()

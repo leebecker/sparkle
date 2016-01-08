@@ -3,8 +3,8 @@ package epic.preprocess
 import java.io.FileInputStream
 
 //import breeze.config.CommandLineParser
-import epic.slab._
-import epic.slab.Sentence
+import org.sparkle.slab._
+import org.sparkle.typesystem.basic.Sentence
 
 /**
  *

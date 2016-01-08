@@ -1,6 +1,6 @@
-package epic
+package org.sparkle
 
-import epic.trees.Span
+import org.sparkle.typesystem.basic.Span
 
 /**
  * TODO

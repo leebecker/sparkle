@@ -15,13 +15,13 @@
 */
 package epic.preprocess
 
-import epic.slab._
-import epic.trees.Span
+import org.sparkle.slab._
+import org.sparkle.typesystem.basic.{Token, Sentence, Span}
 
 
 /**
  * Abstract trait for tokenizers, which annotate sentence-segmented text with tokens. Tokenizers work
- * with both raw strings and [[epic.slab.StringSlab]]s.
+ * with both raw strings and [[org.sparkle.slab.StringSlab]]s.
  *
  * @author dlwh
  */

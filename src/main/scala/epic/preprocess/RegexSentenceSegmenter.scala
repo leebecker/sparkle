@@ -1,7 +1,7 @@
 package epic.preprocess
 
-import epic.slab._
-import epic.trees.Span
+import org.sparkle.slab._
+import org.sparkle.typesystem.basic.{Sentence, Span}
 
 /**
  * A simple regex sentence segmenter.

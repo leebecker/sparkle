@@ -1,15 +1,16 @@
-package epic.slab
+package org.sparkle.slab
+
+import org.sparkle.typesystem.basic.Span
+import org.sparkle.util.BinarySearch
 
 import scala.reflect.ClassTag
 import java.net.URL
-import epic.util.BinarySearch
-import epic.slab.AnnotatedSpan.{EndFirstSpanOrdering, SpanOrdering}
-import epic.trees.Span
+import org.sparkle.slab.AnnotatedSpan.{EndFirstSpanOrdering, SpanOrdering}
 
 /**
  * A Slab is the core "document" type in Epic. It represents a document and a set of annotations on that document,
  * such as sentence boundaries, tokens, named entity spans, etc. The ContentType is the type of the document--typically
- * a string--and the AnnotationTypes parameter is an encoding of the kinds of annotations that are present. [[epic.slab.AnalysisFunction]]s
+ * a string--and the AnnotationTypes parameter is an encoding of the kinds of annotations that are present. [[AnalysisFunction]]s
  * can be used to add new annotations to a Slab that have the prerequisite annotations.
  * @tparam ContentType
  * @tparam RegionType
@@ -110,15 +111,12 @@ object AnnotatedSpan {
 
 }
 
-// ===========
-// Annotations
-// ===========
-case class Source(url: URL)
-case class Sentence(id: Option[String]=None)
-case class Segment(id: Option[String]=None)
-case class Token(token: String, id: Option[String]=None)
-case class PartOfSpeech(tag: String, id: Option[String] = None)
-case class EntityMention(entityType: String, id: Option[String] = None)
+
+
+
+
+
+
 
 
 object Slab {

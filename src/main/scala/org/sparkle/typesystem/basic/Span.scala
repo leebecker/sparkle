@@ -1,4 +1,4 @@
-package epic.trees
+package org.sparkle.typesystem.basic
 
 import spire.syntax.cfor
 
