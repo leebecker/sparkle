@@ -41,14 +41,15 @@ object DependencyParser extends StringAnalysisFunction[Sentence with Token, Depe
         val (nodes, relations) = depTreeToDepGraph((sentenceSpan, sentence), tokens, tree)
         nodes.zip(relations)
         depTreeToDepGraph((sentenceSpan, sentence), tokens, tree)
-    }.seq
+    }.toList
     val nodes = depGraphSpans.flatMap(x => x._1)
     val relations = depGraphSpans.flatMap(x => x._2)
-    slab.addLayer[DependencyNode](nodes).addLayer[DependencyRelation](relations)
+    val s = slab.addLayer[DependencyNode](nodes).addLayer[DependencyRelation](relations)
+    s
   }
 
   def depTreeToDepGraph(sentence: (Span, Sentence), tokens: Seq[(Span, Token)], tree: DEPTree)  = {
-    val nodes = IndexedSeq[DependencyNode](RootDependencyNode(sentence._2)) ++ tokens.map{case (span, token) => TokenDependencyNode(Option(token))}
+    val nodes = IndexedSeq[DependencyNode](RootDependencyNode(sentence._2)) ++ tokens.map{case (span, token) => TokenDependencyNode(Option(token), Option(span))}
     val nodeSpans = IndexedSeq(Span(sentence._1.begin, sentence._1.end)) ++ tokens.map{case(span, token) => Span(span.begin, span.end)}
 
     val relations = tree.map { node =>

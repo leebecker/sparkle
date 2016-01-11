@@ -3,6 +3,7 @@ package org.sparkle.clearnlp
 import org.scalatest.FunSuite
 import org.sparkle.slab.{Slab, StringSlab}
 import org.sparkle.typesystem.basic.{PartOfSpeech, Token, Sentence, Span}
+import org.sparkle.typesystem.syntax.dependency._
 
 class ClearNlpTest extends FunSuite {
 
@@ -46,5 +47,32 @@ class ClearNlpTest extends FunSuite {
 
     val lemmasInSentence0 = tokensInSentence0.map{ case (span, token) => token.lemma.get }
     assert(lemmasInSentence0 === List("this", "be", "sentence", "#crd#", "."))
+
+    val depRelationsInSentence0 = slab.covered[DependencyRelation](sentences.head._1)
+    val triplesInSentence = depRelationsInSentence0.map{case (span, rel) => DependencyUtils.extractTriple(rel)}
+    assert(triplesInSentence === List(
+      ("attr", "This", "is"),
+      ("root", "is", "ROOT"),
+      ("attr", "one", "is"),
+      ("punct", ".", "is"),
+      ("nsubj", "sentence", "one"))
+    )
+
+    val depNodesInSentence0 = slab.covered[DependencyNode](sentences.head._1)
+    val triplesInSentence0 = depNodesInSentence0.flatMap(x => x match {
+      case (s: Span, d: RootDependencyNode) => None
+      case (s: Span, d: TokenDependencyNode) => Some(DependencyUtils.extractTriple(d))
+    })
+
+    // Note difference ordering from above.
+    assert(triplesInSentence0 === List(
+      ("attr", "This", "is"),
+      ("root", "is", "ROOT"),
+      ("nsubj", "sentence", "one"),
+      ("attr", "one", "is"),
+      ("punct", ".", "is"))
+    )
+
+
   }
 }
