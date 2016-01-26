@@ -79,6 +79,14 @@
             <artifactId>spark-hive_2.10</artifactId>
             <version>1.5.2</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-repl_2.10</artifactId>
+            <version>1.5.2</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
@@ -172,6 +180,15 @@
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>scala-maven-plugin</artifactId>
                     <version>3.2.2</version>
+                    <configuration>
+                        <scalaCompatVersion>2.10</scalaCompatVersion>
+                        <args>
+                            <arg>-deprecation</arg>
+                            <arg>-feature</arg>
+                        </args>
+                        <mainConsole>org.apache.spark.repl.Main</mainConsole>
+                    </configuration>
+
                 </plugin>
                 <!-- This plugin allows compilation of Java in Maven -->
                 <plugin>
