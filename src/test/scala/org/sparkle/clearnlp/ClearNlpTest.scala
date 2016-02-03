@@ -12,7 +12,20 @@ class ClearNlpTest extends FunSuite {
   // =========
   val stringBegin = (slab: StringSlab[Span]) => slab
 
-  // =========
+  test("ClearNLP standalone sentence segmentation test") {
+
+    val pipeline = SentenceSegmenter
+
+    val slab = pipeline(Slab( """This is sentence one.  Do you like sentence 2?  Mr. and Dr. Takahashi want to leave!  Go now!"""))
+    val sentences = slab.iterator[Sentence].toList
+    assert(sentences.map { case (span, _) => slab.spanned(span) } === List(
+      """This is sentence one.""",
+      """Do you like sentence 2?""",
+      """Mr. and Dr. Takahashi want to leave!""",
+      """Go now!"""
+    ))
+  }
+
   // Tests
   // =========
   test("ClearNLP sentence segmentation and tokenization test") {
