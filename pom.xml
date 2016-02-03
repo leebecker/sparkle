@@ -161,6 +161,19 @@
             <version>3.0</version>
         </dependency>
 
+       <dependency>
+            <groupId>org.apache.opennlp</groupId>
+            <artifactId>opennlp-tools</artifactId>
+            <version>1.6.0</version>
+            <exclusions>
+                <!-- only needed for coreference, which we don't wrap yet -->
+                <exclusion>
+                    <groupId>jwnl</groupId>
+                    <artifactId>jwnl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
 
         <!-- Test dependencies -->
         <dependency>
