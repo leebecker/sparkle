@@ -76,13 +76,12 @@
 
         <!-- scalanlp/epic for SLAB objects -->
         <!-- Uncomment the following dependency when epic has a new release.  For now use copy of code locally-->
-        <!--
         <dependency>
             <groupId>org.scalanlp</groupId>
             <artifactId>epic_2.10</artifactId>
-            <version>0.3.1</version>
+            <version>0.4-SNAPSHOT</version>
+            <!--<version>0.3.1</version>-->
         </dependency>
-        -->
         <!-- Needed by scala-nlp-epic code -->
         <dependency>
             <groupId>org.spire-math</groupId>

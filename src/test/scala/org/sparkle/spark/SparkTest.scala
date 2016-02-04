@@ -1,19 +1,21 @@
 package org.sparkle.spark
 
+import epic.slab.{Slab, StringAnalysisFunction, StringSlab}
 import org.scalatest._
 import org.sparkle.clearnlp._
-import org.sparkle.slab.{Slab, StringSlab}
-import org.sparkle.typesystem.basic.{PartOfSpeech, Token, Sentence, Span}
-import org.sparkle.typesystem.syntax.dependency._
+import org.sparkle.preprocess.RegexSplitTokenizer
+import org.sparkle.typesystem.basic.{Token, Sentence}
 
-import org.apache.spark.sql.hive.HiveContext
-import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{SparkConf, SparkContext}
 
 object SparkTestUtils {
+  val sentenceSegmenterAndTokenizer: StringAnalysisFunction[Any, Sentence with Token] = SentenceSegmenterAndTokenizer
+  val posTagger: StringAnalysisFunction[Sentence with Token, Token] = PosTagger
+  val mpAnalyzer: StringAnalysisFunction[Sentence with Token, Token] = MpAnalyzer
 
-  def pipeline(s: StringSlab[Any]) = (SentenceSegmenterAndTokenizer andThen PosTagger andThen MpAnalyzer).apply(s)
-
+  val pipeline = sentenceSegmenterAndTokenizer andThen posTagger andThen mpAnalyzer
+  //def opennlpPipeline(s: StringSlab[Any]) = org.sparkle.opennlp.SentenceSegmenter.apply(s)
+  val regexPipeline = new RegexSplitTokenizer("""[\W]+\s*""")
 }
 
 class SparkTest extends FunSuite with Matchers {
@@ -25,8 +27,36 @@ class SparkTest extends FunSuite with Matchers {
 
   // Create a HiveContext instead of a vanilla SQLContext so that
   // we can use Hive UDFs and UDAFs
-  val sqlContext = new HiveContext(sc)
-  import sqlContext.implicits._
+  //val sqlContext = new HiveContext(sc)
+  //import sqlContext.implicits._
+
+  test("SparkWithRegexTokenizer") {
+    val slabs = Seq(
+        Slab("""Words are fun to count.  Counting words is what we Mr. Jones O.K. do."""),
+        Slab("""Whether it be one word, two words or more, we our word count will score."""),
+        Slab("""Wording this last set of words to count is wordy.""")
+      )
+      val slabRdd = sc.parallelize(slabs).map(slab => SparkTestUtils.regexPipeline(slab))
+      val sentences = slabRdd.map {slab => (slab, slab.iterator[Token].toSeq)}.flatMap{case(slab, tokens) => tokens.map(t => slab.spanned(t._1))}
+      sentences.foreach(println("*", _))
+
+  }
+
+  /*
+  test("SparkWithOpenNlp") {
+    //This test will fail if Spark is running multithreaded.
+
+     val slabs = Seq(
+      Slab("""Words are fun to count.  Counting words is what we do."""),
+      Slab("""Whether it be one word, two words or more, we our word count will score."""),
+      Slab("""Wording this last set of words to count is wordy.""")
+    )
+    val slabRdd = sc.parallelize(slabs).map(SparkTestUtils.opennlpPipeline)
+    val sentences = slabRdd.map {slab => (slab, slab.iterator[Sentence].toSeq)}.flatMap{case(slab, sentences) => sentences.map(s => slab.spanned(s._1))}
+    sentences.foreach(println("*", _))
+
+  }
+  */
 
   test("TokenCountsWithSpark") {
     val slabs = Seq(
@@ -35,12 +65,14 @@ class SparkTest extends FunSuite with Matchers {
       Slab("""Wording this last set of words to count is wordy.""")
     )
 
+
     val mySlab0 = Slab("""Words are fun to count.  Counting words is what we do.""")
-    val mySlab1 = SentenceSegmenterAndTokenizer(mySlab0)
+    val mySlab1 = SparkTestUtils.sentenceSegmenterAndTokenizer(mySlab0)
     val mySlab2 = PosTagger(mySlab1)
     val mySlab3 = MpAnalyzer(mySlab2)
 
-    val slabRdd = sc.parallelize(slabs).map(SparkTestUtils.pipeline)
+    val slabRdd = sc.parallelize(slabs).map(slab => SparkTestUtils.pipeline(slab))
+
     val tokensRdd = slabRdd.map { slab => slab.iterator[Token].toSeq}.flatMap(tokens => tokens)
 
     val wordCountsRdd = tokensRdd.map{ case (_, token) => (token.token, 1) }.reduceByKey(_ + _)

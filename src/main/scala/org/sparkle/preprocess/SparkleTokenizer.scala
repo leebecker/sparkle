@@ -13,10 +13,11 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-package epic.preprocess
+package org.sparkle.preprocess
 
-import org.sparkle.slab._
-import org.sparkle.typesystem.basic.{Token, Sentence, Span}
+import epic.slab._
+import epic.trees.Span
+import org.sparkle.typesystem.basic.{Sentence, Token}
 
 
 /**
@@ -26,7 +27,7 @@ import org.sparkle.typesystem.basic.{Token, Sentence, Span}
  * @author dlwh
  */
 @SerialVersionUID(1)
-trait Tokenizer extends StringAnalysisFunction[Sentence, Token] with Serializable with (String=>IndexedSeq[String]) {
+trait SparkleTokenizer extends StringAnalysisFunction[Sentence, Token] with Serializable with (String=>IndexedSeq[String]) {
   override def toString() = getClass.getName +"()"
 
   def apply(a: String):IndexedSeq[String] = {

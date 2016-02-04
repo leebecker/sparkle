@@ -4,10 +4,10 @@ import java.io.InputStream
 
 import edu.emory.clir.clearnlp.component.utils.NLPUtils
 import edu.emory.clir.clearnlp.util.lang.TLanguage
+import epic.slab.{StringSlab, Slab, StringAnalysisFunction}
+import epic.trees.Span
 import opennlp.tools.sentdetect.{SentenceDetectorME, SentenceModel}
-import org.sparkle.slab._
-import org.apache.commons.io.IOUtils
-import org.sparkle.typesystem.basic.{Token, Sentence, Span}
+import org.sparkle.typesystem.basic.{Token, Sentence}
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._

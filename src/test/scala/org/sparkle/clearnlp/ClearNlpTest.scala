@@ -1,8 +1,9 @@
 package org.sparkle.clearnlp
 
+import epic.trees.Span
 import org.scalatest.FunSuite
-import org.sparkle.slab.{Slab, StringSlab}
-import org.sparkle.typesystem.basic.{PartOfSpeech, Token, Sentence, Span}
+import epic.slab.{StringAnalysisFunction, Slab, StringSlab}
+import org.sparkle.typesystem.basic.{Token, Sentence}
 import org.sparkle.typesystem.syntax.dependency._
 
 class ClearNlpTest extends FunSuite {
@@ -30,7 +31,12 @@ class ClearNlpTest extends FunSuite {
   // =========
   test("ClearNLP sentence segmentation and tokenization test") {
 
-    val pipeline = SentenceSegmenterAndTokenizer andThen PosTagger andThen MpAnalyzer andThen DependencyParser
+    val sentenceSegmenter: StringAnalysisFunction[Any, Sentence with Token] = SentenceSegmenterAndTokenizer
+    val posTagger: StringAnalysisFunction[Sentence with Token, Token] = PosTagger
+    val mpAnalyzer: StringAnalysisFunction[Sentence with Token, Token] = MpAnalyzer
+    val depParser: StringAnalysisFunction[Sentence with Token, DependencyNode with DependencyRelation] = DependencyParser
+
+    val pipeline = sentenceSegmenter andThen PosTagger andThen MpAnalyzer andThen DependencyParser
     val slab = pipeline(Slab( """This is sentence one.  Do you like sentence 2?  Mr. and Dr. Takahashi want to leave!  Go now!"""))
     val sentences = slab.iterator[Sentence].toList
     assert(sentences.map{case (span, _) => slab.spanned(span)} === List(

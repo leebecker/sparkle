@@ -1,6 +1,7 @@
 package org.sparkle.typesystem.syntax.dependency
 
-import org.sparkle.typesystem.basic.{Span, Sentence, Token}
+import epic.trees.Span
+import org.sparkle.typesystem.basic.{Sentence, Token}
 
 import scala.collection.mutable
 

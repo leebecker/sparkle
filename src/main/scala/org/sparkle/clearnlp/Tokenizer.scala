@@ -4,9 +4,11 @@ import java.io.InputStream
 
 import edu.emory.clir.clearnlp.component.utils.NLPUtils
 import edu.emory.clir.clearnlp.util.lang.TLanguage
-import org.sparkle.slab._
+import epic.trees.Span
+
+import epic.slab.{StringSlab, Slab, StringAnalysisFunction}
 import org.apache.commons.io.IOUtils
-import org.sparkle.typesystem.basic.{Token, Sentence, Span}
+import org.sparkle.typesystem.basic.{Token, Sentence}
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._
@@ -15,13 +17,15 @@ import scala.collection.JavaConversions._
   * Created by leebecker on 1/7/16.
   */
 
-trait SentenceSegmenterBase extends StringAnalysisFunction[Any, Sentence] with (String => Iterable[String]) with Serializable {
+trait SentenceSegmenterBase extends /*StringAnalysisFunction[Any, Sentence] with (String => Iterable[String]) with */Serializable {
   override def toString = getClass.getName
 
+  /*
   def apply(a: String):IndexedSeq[String] = {
     val slab = Slab(a)
     apply(slab).iterator[Sentence].toIndexedSeq.map(s => slab.spanned(s._1))
   }
+  */
 
 }
 
@@ -35,7 +39,8 @@ object SentenceSegmenter extends SentenceSegmenterBase {
   val defaultLanguageCode = TLanguage.ENGLISH.toString
   val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(defaultLanguageCode))
 
-  override def apply[In](slab: StringSlab[In]): StringSlab[In with Sentence] = {
+  //override
+  def apply[In](slab: epic.slab.StringSlab[In]): StringSlab[In with Sentence] = {
 
     // Convert slab text to an input stream and run with ClearNLP
     val stream: InputStream = IOUtils.toInputStream(slab.content)
@@ -88,7 +93,8 @@ object SentenceSegmenterAndTokenizer extends SentenceSegmenterAndTokenizerBase {
   val defaultLanguageCode = TLanguage.ENGLISH.toString
   val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(defaultLanguageCode))
 
-  override def apply[In](slab: StringSlab[In]): StringSlab[In with Sentence with Token] =  {
+  override
+  def apply[In](slab: StringSlab[In]): StringSlab[In with Sentence with Token] =  {
 
     // Convert slab text to an input stream and run with ClearNLP
     val stream: InputStream = IOUtils.toInputStream(slab.content)

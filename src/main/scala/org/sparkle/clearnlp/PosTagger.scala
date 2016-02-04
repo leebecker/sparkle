@@ -3,8 +3,9 @@ package org.sparkle.clearnlp
 import edu.emory.clir.clearnlp.component.utils.{GlobalLexica, NLPUtils}
 import edu.emory.clir.clearnlp.dependency.DEPTree
 import edu.emory.clir.clearnlp.util.lang.TLanguage
-import org.sparkle.slab._
-import org.sparkle.typesystem.basic.{Span, Sentence, Token}
+import epic.slab._
+import epic.trees.Span
+import org.sparkle.typesystem.basic.{Sentence, Token}
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._

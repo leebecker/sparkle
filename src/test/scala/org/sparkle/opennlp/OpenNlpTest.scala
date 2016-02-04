@@ -1,8 +1,9 @@
 package org.sparkle.opennlp
 
+import epic.slab._
+import epic.trees.Span
 import org.scalatest.FunSuite
-import org.sparkle.slab.{Slab, StringSlab}
-import org.sparkle.typesystem.basic.{Sentence, Span, Token}
+import org.sparkle.typesystem.basic.{Sentence, Token}
 
 class OpenNlpTest extends FunSuite {
 
@@ -13,7 +14,7 @@ class OpenNlpTest extends FunSuite {
 
   test("OpenNlp sentence segmentation test") {
 
-    val pipeline = SentenceSegmenter
+    val pipeline: StringAnalysisFunction[Any, Sentence] = SentenceSegmenter
 
     val slab = pipeline(Slab(
       """

@@ -4,8 +4,9 @@ import edu.emory.clir.clearnlp.component.mode.dep.DEPConfiguration
 import edu.emory.clir.clearnlp.component.utils.{GlobalLexica, NLPUtils}
 import edu.emory.clir.clearnlp.dependency.{DEPFeat, DEPNode, DEPTree}
 import edu.emory.clir.clearnlp.util.lang.TLanguage
-import org.sparkle.slab._
-import org.sparkle.typesystem.basic.{Sentence, Span, Token}
+import epic.slab._
+import epic.trees.Span
+import org.sparkle.typesystem.basic.{Sentence, Token}
 import org.sparkle.typesystem.syntax.dependency._
 
 import scala.collection.JavaConversions._
