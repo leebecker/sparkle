@@ -1,6 +1,6 @@
 package org.sparkle.preprocess
-import epic.slab.{StringAnalysisFunction, Slab}
-import org.sparkle.typesystem.basic.{Token, Sentence}
+import epic.slab.{StringAnalysisFunction, Sentence, Slab}
+import org.sparkle.typesystem.basic.{Token}
 
 /**
   * Created by leebecker on 2/4/16.
