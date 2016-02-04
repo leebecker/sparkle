@@ -6,7 +6,7 @@ import edu.emory.clir.clearnlp.dependency.{DEPFeat, DEPNode, DEPTree}
 import edu.emory.clir.clearnlp.util.lang.TLanguage
 import epic.slab._
 import epic.trees.Span
-import org.sparkle.typesystem.basic.{Sentence, Token}
+import org.sparkle.typesystem.basic.{Token}
 import org.sparkle.typesystem.syntax.dependency._
 
 import scala.collection.JavaConversions._

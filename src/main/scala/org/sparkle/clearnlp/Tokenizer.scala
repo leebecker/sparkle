@@ -6,9 +6,10 @@ import edu.emory.clir.clearnlp.component.utils.NLPUtils
 import edu.emory.clir.clearnlp.util.lang.TLanguage
 import epic.trees.Span
 
-import epic.slab.{StringSlab, Slab, StringAnalysisFunction}
+import epic.slab.{Sentence, StringSlab}
 import org.apache.commons.io.IOUtils
-import org.sparkle.typesystem.basic.{Token, Sentence}
+import org.sparkle.preprocess.SparkleSentenceSegmenterAndTokenizer
+import org.sparkle.typesystem.basic.Token
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._
@@ -17,30 +18,18 @@ import scala.collection.JavaConversions._
   * Created by leebecker on 1/7/16.
   */
 
-trait SentenceSegmenterBase extends /*StringAnalysisFunction[Any, Sentence] with (String => Iterable[String]) with */Serializable {
-  override def toString = getClass.getName
-
-  /*
-  def apply(a: String):IndexedSeq[String] = {
-    val slab = Slab(a)
-    apply(slab).iterator[Sentence].toIndexedSeq.map(s => slab.spanned(s._1))
-  }
-  */
-
-}
 
 /**
   * Wrapper for ClearNLP's Sentence Segmenter.  Under the hood this does redundant
   * tokenization that gets thrown away.  Use this if you have your own tokenization
   * needs downstream.
   */
-object SentenceSegmenter extends SentenceSegmenterBase {
+object SentenceSegmenter extends epic.preprocess.SentenceSegmenter {
   // FIXME parameterize language code and pre-load tokenizer
   val defaultLanguageCode = TLanguage.ENGLISH.toString
   val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(defaultLanguageCode))
 
-  //override
-  def apply[In](slab: epic.slab.StringSlab[In]): StringSlab[In with Sentence] = {
+  override def apply[In](slab: epic.slab.StringSlab[In]): StringSlab[In with Sentence] = {
 
     // Convert slab text to an input stream and run with ClearNLP
     val stream: InputStream = IOUtils.toInputStream(slab.content)
@@ -73,28 +62,18 @@ object SentenceSegmenter extends SentenceSegmenterBase {
 }
 
 
-trait SentenceSegmenterAndTokenizerBase extends StringAnalysisFunction[Any, Sentence with Token] with (String => Iterable[String]) with Serializable {
-  override def toString = getClass.getName
-
-  def apply(a: String):IndexedSeq[String] = {
-    val slab = Slab(a)
-    apply(slab).iterator[Sentence with Token].toIndexedSeq.map(s => slab.spanned(s._1))
-  }
-}
-
 /**
   * SparkLE wrapper for ClearNLP Sentence Segmenter + Tokenizer Combo <p>
   *
   * Prerequisites: StringSlab object <br>
   * Outputs: new StringSlab object with Sentence and Token annotations <br>
   */
-object SentenceSegmenterAndTokenizer extends SentenceSegmenterAndTokenizerBase {
+object SentenceSegmenterAndTokenizer extends SparkleSentenceSegmenterAndTokenizer {
   // FIXME parameterize language code and pre-load tokenizer
   val defaultLanguageCode = TLanguage.ENGLISH.toString
   val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(defaultLanguageCode))
 
-  override
-  def apply[In](slab: StringSlab[In]): StringSlab[In with Sentence with Token] =  {
+  override def apply[In](slab: StringSlab[In]): StringSlab[In with Sentence with Token] =  {
 
     // Convert slab text to an input stream and run with ClearNLP
     val stream: InputStream = IOUtils.toInputStream(slab.content)

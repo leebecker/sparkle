@@ -4,25 +4,15 @@ import java.io.InputStream
 
 import edu.emory.clir.clearnlp.component.utils.NLPUtils
 import edu.emory.clir.clearnlp.util.lang.TLanguage
-import epic.slab.{StringSlab, Slab, StringAnalysisFunction}
+import epic.slab._
 import epic.trees.Span
 import opennlp.tools.sentdetect.{SentenceDetectorME, SentenceModel}
-import org.sparkle.typesystem.basic.{Token, Sentence}
+import org.sparkle.typesystem.basic.{Token}
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._
 
-trait SentenceSegmenterBase extends StringAnalysisFunction[Any, Sentence] with (String => Iterable[String]) with Serializable {
-  override def toString = getClass.getName
-
-  def apply(a: String):IndexedSeq[String] = {
-    val slab = Slab(a)
-    apply(slab).iterator[Sentence].toIndexedSeq.map(s => slab.spanned(s._1))
-  }
-
-}
-
-object SentenceSegmenter extends SentenceSegmenterBase {
+object SentenceSegmenter extends epic.preprocess.SentenceSegmenter {
   // FIXME parameterize language code and pre-load tokenizer
   val defaultLanguageCode = TLanguage.ENGLISH.toString
   val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(defaultLanguageCode))
@@ -33,7 +23,7 @@ object SentenceSegmenter extends SentenceSegmenterBase {
 
   val modelInputStream = getClass.getResource(sentenceModelPath).openStream()
   val model = new SentenceModel(modelInputStream)
-  val sentenceDetector = new SentenceDetectorME(model);
+  val sentenceDetector = new SentenceDetectorME(model)
 
 
   def getSentenceOffsets(text: String) = {
@@ -49,8 +39,8 @@ object SentenceSegmenter extends SentenceSegmenterBase {
     val sentenceOffsets = getSentenceOffsets(slab.content)
     val sentences = ListBuffer[Tuple2[Span, Sentence]]()
 
-    var begin = 0;
-    var end = 0;
+    var begin = 0
+    var end = 0
     val textOffset = 0
     val text = slab.content
 

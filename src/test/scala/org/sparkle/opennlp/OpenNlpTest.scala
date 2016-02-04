@@ -3,7 +3,7 @@ package org.sparkle.opennlp
 import epic.slab._
 import epic.trees.Span
 import org.scalatest.FunSuite
-import org.sparkle.typesystem.basic.{Sentence, Token}
+import org.sparkle.typesystem.basic.{Token}
 
 class OpenNlpTest extends FunSuite {
 

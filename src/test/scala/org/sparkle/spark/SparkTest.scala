@@ -1,10 +1,10 @@
 package org.sparkle.spark
 
-import epic.slab.{Slab, StringAnalysisFunction, StringSlab}
 import org.scalatest._
+import epic.slab._
 import org.sparkle.clearnlp._
 import org.sparkle.preprocess.RegexSplitTokenizer
-import org.sparkle.typesystem.basic.{Token, Sentence}
+import org.sparkle.typesystem.basic.{Token}
 
 import org.apache.spark.{SparkConf, SparkContext}
 

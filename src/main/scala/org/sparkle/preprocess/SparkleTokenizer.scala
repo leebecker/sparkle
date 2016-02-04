@@ -17,7 +17,7 @@ package org.sparkle.preprocess
 
 import epic.slab._
 import epic.trees.Span
-import org.sparkle.typesystem.basic.{Sentence, Token}
+import org.sparkle.typesystem.basic.{Token}
 
 
 /**

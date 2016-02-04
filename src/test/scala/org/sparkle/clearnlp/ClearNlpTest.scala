@@ -2,8 +2,8 @@ package org.sparkle.clearnlp
 
 import epic.trees.Span
 import org.scalatest.FunSuite
-import epic.slab.{StringAnalysisFunction, Slab, StringSlab}
-import org.sparkle.typesystem.basic.{Token, Sentence}
+import epic.slab._
+import org.sparkle.typesystem.basic.{Token}
 import org.sparkle.typesystem.syntax.dependency._
 
 class ClearNlpTest extends FunSuite {
