@@ -33,11 +33,11 @@ class ClearNlpTest extends FunSuite {
 
     val sentenceSegmenter: StringAnalysisFunction[Any, Sentence] = ClearNlpTokenization.sentenceSegmenter()
     val tokenizer: StringAnalysisFunction[Sentence, Token] = ClearNlpTokenization.tokenizer()
-    val posTagger: StringAnalysisFunction[Sentence with Token, Token] = PosTagger2.sparkleTypesPosTagger()
+    val posTagger: StringAnalysisFunction[Sentence with Token, Token] = PosTagger.sparkleTypesPosTagger()
     val mpAnalyzer: StringAnalysisFunction[Sentence with Token, Token] = MpAnalyzer
     val depParser: StringAnalysisFunction[Sentence with Token, DependencyNode with DependencyRelation] = DependencyParser
 
-    val pipeline = sentenceSegmenter andThen tokenizer andThen PosTagger andThen MpAnalyzer andThen DependencyParser
+    val pipeline = sentenceSegmenter andThen tokenizer andThen posTagger andThen MpAnalyzer andThen DependencyParser
     val slab = pipeline(Slab( """This is sentence one.  Do you like sentence 2?  Mr. and Dr. Takahashi want to leave!  Go now!"""))
     val sentences = slab.iterator[Sentence].toList
     assert(sentences.map{case (span, _) => slab.spanned(span)} === List(

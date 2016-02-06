@@ -23,7 +23,8 @@ object DependencyParser extends StringAnalysisFunction[Sentence with Token, Depe
   val mpAnalyzer = NLPUtils.getMPAnalyzer(TLanguage.getType(defaultLanguageCode))
   val parserModelPath = "general-en-dep.xz"
 
-  GlobalLexica.initDistributionalSemanticsWords(PosTagger.paths)
+  val paths: Seq[String] = "brown-rcv1.clean.tokenized-CoNLL03.txt-c1000-freq1.txt.xz" :: Nil
+  GlobalLexica.initDistributionalSemanticsWords(paths)
   val parser = NLPUtils.getDEPParser(TLanguage.getType(defaultLanguageCode), parserModelPath, new DEPConfiguration("root"))
 
   def apply[In <: Token with Sentence](slab: StringSlab[In]): StringSlab[In with DependencyNode with DependencyRelation] = {

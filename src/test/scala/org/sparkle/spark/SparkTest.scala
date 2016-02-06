@@ -10,7 +10,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 object SparkTestUtils {
   val sentenceSegmenterAndTokenizer: StringAnalysisFunction[Any, Sentence with Token] = SentenceSegmenterAndTokenizer
-  val posTagger: StringAnalysisFunction[Sentence with Token, Token] = PosTagger
+  val posTagger: StringAnalysisFunction[Sentence with Token, Token] = PosTagger.sparkleTypesPosTagger()
   val mpAnalyzer: StringAnalysisFunction[Sentence with Token, Token] = MpAnalyzer
 
   val pipeline = sentenceSegmenterAndTokenizer andThen posTagger andThen mpAnalyzer
@@ -68,7 +68,7 @@ class SparkTest extends FunSuite with Matchers {
 
     val mySlab0 = Slab("""Words are fun to count.  Counting words is what we do.""")
     val mySlab1 = SparkTestUtils.sentenceSegmenterAndTokenizer(mySlab0)
-    val mySlab2 = PosTagger(mySlab1)
+    val mySlab2 = PosTagger.sparkleTypesPosTagger()(mySlab1)
     val mySlab3 = MpAnalyzer(mySlab2)
 
     val slabRdd = sc.parallelize(slabs).map(slab => SparkTestUtils.pipeline(slab))
