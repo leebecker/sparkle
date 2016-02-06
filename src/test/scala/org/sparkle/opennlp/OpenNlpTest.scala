@@ -14,7 +14,7 @@ class OpenNlpTest extends FunSuite {
 
   test("OpenNlp sentence segmentation test") {
 
-    val pipeline: StringAnalysisFunction[Any, Sentence] = SentenceSegmenter
+    val pipeline: StringAnalysisFunction[Any, Sentence] = OpenNlpSentenceSegmenter.sentenceSegmenter()
 
     val slab = pipeline(Slab(
       """
