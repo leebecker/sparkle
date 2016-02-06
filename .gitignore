@@ -1,3 +1,16 @@
+# Build Products
+target/
+build/
+derby.log
+metastore_db/
+
+# IntelliJ data
+*.iml
+.idea/
+.ipr
+
+# Hive metastore
+metastore_db/
+derby.log
+
 .DS_Store
-/target
-/.idea
