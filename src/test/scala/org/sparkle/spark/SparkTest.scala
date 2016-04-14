@@ -1,17 +1,18 @@
 package org.sparkle.spark
 
 import org.scalatest._
-import epic.slab._
+import epic.slab.Sentence
+import org.sparkle.slate._
 import org.sparkle.clearnlp._
 import org.sparkle.preprocess.RegexSplitTokenizer
-import org.sparkle.typesystem.basic.{Token}
+import org.sparkle.typesystem.basic.Token
 
 import org.apache.spark.{SparkConf, SparkContext}
 
 object SparkTestUtils {
-  val sentenceSegmenterAndTokenizer: StringAnalysisFunction[Any, Sentence with Token] = SentenceSegmenterAndTokenizer
-  val posTagger: StringAnalysisFunction[Sentence with Token, Token] = PosTagger.sparkleTypesPosTagger()
-  val mpAnalyzer: StringAnalysisFunction[Sentence with Token, Token] = MpAnalyzer
+  val sentenceSegmenterAndTokenizer: StringAnalysisFunction = SentenceSegmenterAndTokenizer
+  val posTagger: StringAnalysisFunction = PosTagger.sparkleTypesPosTagger()
+  val mpAnalyzer: StringAnalysisFunction = MpAnalyzer
 
   val pipeline = sentenceSegmenterAndTokenizer andThen posTagger andThen mpAnalyzer
   //def opennlpPipeline(s: StringSlab[Any]) = org.sparkle.opennlp.SentenceSegmenter.apply(s)
@@ -32,9 +33,9 @@ class SparkTest extends FunSuite with Matchers {
 
   test("SparkWithRegexTokenizer") {
     val slabs = Seq(
-        Slab("""Words are fun to count.  Counting words is what we Mr. Jones O.K. do."""),
-        Slab("""Whether it be one word, two words or more, we our word count will score."""),
-        Slab("""Wording this last set of words to count is wordy.""")
+        Slate("""Words are fun to count.  Counting words is what we Mr. Jones O.K. do."""),
+        Slate("""Whether it be one word, two words or more, we our word count will score."""),
+        Slate("""Wording this last set of words to count is wordy.""")
       )
       val slabRdd = sc.parallelize(slabs).map(slab => SparkTestUtils.regexPipeline(slab))
       val sentences = slabRdd.map {slab => (slab, slab.iterator[Token].toSeq)}.flatMap{case(slab, tokens) => tokens.map(t => slab.spanned(t._1))}
@@ -60,13 +61,13 @@ class SparkTest extends FunSuite with Matchers {
 
   test("TokenCountsWithSpark") {
     val slabs = Seq(
-      Slab("""Words are fun to count.  Counting words is what we do."""),
-      Slab("""Whether it be one word, two words or more, we our word count will score."""),
-      Slab("""Wording this last set of words to count is wordy.""")
+      Slate("""Words are fun to count.  Counting words is what we do."""),
+      Slate("""Whether it be one word, two words or more, we our word count will score."""),
+      Slate("""Wording this last set of words to count is wordy.""")
     )
 
 
-    val mySlab0 = Slab("""Words are fun to count.  Counting words is what we do.""")
+    val mySlab0 = Slate("""Words are fun to count.  Counting words is what we do.""")
     val mySlab1 = SparkTestUtils.sentenceSegmenterAndTokenizer(mySlab0)
     val mySlab2 = PosTagger.sparkleTypesPosTagger()(mySlab1)
     val mySlab3 = MpAnalyzer(mySlab2)

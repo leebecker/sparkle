@@ -5,9 +5,10 @@ import java.io.InputStream
 import edu.emory.clir.clearnlp.component.utils.NLPUtils
 import edu.emory.clir.clearnlp.tokenization.AbstractTokenizer
 import edu.emory.clir.clearnlp.util.lang.TLanguage
-import epic.trees.Span
+import org.sparkle.slate.Span
 
-import epic.slab._
+import org.sparkle.slate._
+import epic.slab.Sentence
 import org.apache.commons.io.IOUtils
 import org.sparkle.preprocess.{SparkleTokenizer, SparkleSentenceSegmenterAndTokenizer}
 import org.sparkle.typesystem.basic.Token
@@ -28,7 +29,7 @@ import scala.reflect.ClassTag
 
 
 object Tokenize {
-  def segmentSentences[In](tokenizer: AbstractTokenizer, slab: StringSlab[In]) = {
+  def segmentSentences(tokenizer: AbstractTokenizer, slab: StringSlate) = {
 
     // Convert slab text to an input stream and run with ClearNLP
     val stream: InputStream = IOUtils.toInputStream(slab.content)
@@ -57,7 +58,7 @@ object Tokenize {
     slab.addLayer[Sentence](sentenceSpans)
   }
 
-  def tokenize[In<:Sentence](tokenizer: AbstractTokenizer, slab: StringSlab[In]) = {
+  def tokenize[In<:Sentence](tokenizer: AbstractTokenizer, slab: StringSlate) = {
 
     val tokenSpans = for ((windowSpan, window) <-slab.iterator[Sentence]) yield {
       // Run tokenizer on window
@@ -98,18 +99,18 @@ class Tokenizer(languageCode: String=TLanguage.ENGLISH.toString) extends Sparkle
 
   val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(languageCode))
 
-  override def apply[In<:Sentence](slab: StringSlab[In]): StringSlab[In with Token] = {
+  override def apply(slab: StringSlate): StringSlate = {
     // Convert slab text to an input stream and run with ClearNLP
     val s = Tokenize.tokenize(tokenizer, slab)
     s
   }
 }
 
-class SentenceSegmenter(languageCode:String=TLanguage.ENGLISH.toString) extends epic.preprocess.SentenceSegmenter {
+class SentenceSegmenter(languageCode:String=TLanguage.ENGLISH.toString) extends org.sparkle.slate.analyzers.SentenceSegmenter {
   val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(languageCode))
 
-  override def apply[In](slab: epic.slab.StringSlab[In]): StringSlab[In with Sentence] = {
-    Tokenize.segmentSentences[In](tokenizer, slab)
+  override def apply(slab: StringSlate): StringSlate = {
+    Tokenize.segmentSentences(tokenizer, slab)
   }
 }
 
@@ -124,15 +125,15 @@ object ClearNlpTokenization {
 /**
   * SparkLE wrapper for ClearNLP Sentence Segmenter + Tokenizer Combo <p>
   *
-  * Prerequisites: StringSlab object <br>
-  * Outputs: new StringSlab object with Sentence and Token annotations <br>
+  * Prerequisites: StringSlate object <br>
+  * Outputs: new StringSlate object with Sentence and Token annotations <br>
   */
 object SentenceSegmenterAndTokenizer extends SparkleSentenceSegmenterAndTokenizer {
   // FIXME parameterize language code and pre-load tokenizer
   val defaultLanguageCode = TLanguage.ENGLISH.toString
   val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(defaultLanguageCode))
 
-  override def apply[In](slab: StringSlab[In]): StringSlab[In with Sentence with Token] =  {
+  override def apply(slab: StringSlate): StringSlate =  {
 
     // Convert slab text to an input stream and run with ClearNLP
     val stream: InputStream = IOUtils.toInputStream(slab.content)

@@ -1,7 +1,6 @@
 package org.sparkle.typesystem.ops
 
-import epic.slab.StringSlab
-import epic.trees.Span
+import org.sparkle.slate._
 
 /**
   * Created by leebecker on 2/5/16.
@@ -10,10 +9,9 @@ import epic.trees.Span
 trait SentenceOps[SENTENCE_TYPE] {
   def createSentence(): SENTENCE_TYPE
 
-  def selectSentences[In <: SENTENCE_TYPE](slab: StringSlab[In], coveringSpan: Span): TraversableOnce[(Span, SENTENCE_TYPE)]
+  def selectSentences[In <: SENTENCE_TYPE](slab: StringSlate, coveringSpan: Span): TraversableOnce[(Span, SENTENCE_TYPE)]
 
-  def selectAllSentences[In <: SENTENCE_TYPE](slab: StringSlab[In]): TraversableOnce[(Span, SENTENCE_TYPE)]
+  def selectAllSentences[In <: SENTENCE_TYPE](slab: StringSlate): TraversableOnce[(Span, SENTENCE_TYPE)]
 
-  def addSentences[In](slab: StringSlab[In], sentences: TraversableOnce[(Span, SENTENCE_TYPE)]):
-      StringSlab[In with SENTENCE_TYPE]
+  def addSentences(slate: StringSlate, sentences: TraversableOnce[(Span, SENTENCE_TYPE)]): StringSlate
 }

@@ -4,8 +4,8 @@ import edu.emory.clir.clearnlp.component.mode.dep.DEPConfiguration
 import edu.emory.clir.clearnlp.component.utils.{GlobalLexica, NLPUtils}
 import edu.emory.clir.clearnlp.dependency.{DEPFeat, DEPNode, DEPTree}
 import edu.emory.clir.clearnlp.util.lang.TLanguage
-import epic.slab._
-import epic.trees.Span
+import org.sparkle.slate._
+import epic.slab.Sentence
 import org.sparkle.typesystem.basic.{Token}
 import org.sparkle.typesystem.syntax.dependency._
 
@@ -18,7 +18,7 @@ import scala.collection.mutable
   * Prerequisites: Slab object with Sentence and Token annotations <br>
   * Outputs: new Slab object with Sentence and Tokens with pos field set <br>
   */
-object DependencyParser extends StringAnalysisFunction[Sentence with Token, DependencyNode with DependencyRelation] with Serializable {
+object DependencyParser extends StringAnalysisFunction with Serializable {
   val defaultLanguageCode = TLanguage.ENGLISH.toString
   val mpAnalyzer = NLPUtils.getMPAnalyzer(TLanguage.getType(defaultLanguageCode))
   val parserModelPath = "general-en-dep.xz"
@@ -27,7 +27,7 @@ object DependencyParser extends StringAnalysisFunction[Sentence with Token, Depe
   GlobalLexica.initDistributionalSemanticsWords(paths)
   val parser = NLPUtils.getDEPParser(TLanguage.getType(defaultLanguageCode), parserModelPath, new DEPConfiguration("root"))
 
-  def apply[In <: Token with Sentence](slab: StringSlab[In]): StringSlab[In with DependencyNode with DependencyRelation] = {
+  def apply(slab: StringSlate): StringSlate = {
     val depGraphSpans = slab.iterator[Sentence].map {
       case (sentenceSpan, sentence) =>
         val tokens = slab.covered[Token](sentenceSpan).seq

@@ -4,8 +4,8 @@ package org.sparkle.clearnlp
 import edu.emory.clir.clearnlp.component.utils.{GlobalLexica, NLPUtils}
 import edu.emory.clir.clearnlp.dependency.DEPTree
 import edu.emory.clir.clearnlp.util.lang.TLanguage
-import epic.slab._
-import epic.trees.Span
+import org.sparkle.slate._
+import epic.slab.Sentence
 import org.sparkle.typesystem.basic.{Token}
 
 import scala.collection.JavaConversions._
@@ -17,11 +17,11 @@ import scala.collection.JavaConverters._
   * Prerequisites: Slab object with Sentence and Token annotations <br>
   * Outputs: new Slab object with Sentence and Tokens with pos field set <br>
   */
-object MpAnalyzer extends StringAnalysisFunction[Sentence with Token, Token] with Serializable {
+object MpAnalyzer extends StringAnalysisFunction with Serializable {
   val defaultLanguageCode = TLanguage.ENGLISH.toString
   val mpAnalyzer = NLPUtils.getMPAnalyzer(TLanguage.getType(defaultLanguageCode));
 
-  def apply[In <: Token with Sentence](slab: StringSlab[In]): StringSlab[In with Token] =  {
+  def apply(slab: StringSlate): StringSlate =  {
     val lemmatizedTaggedTokenSpans = slab.iterator[Sentence].flatMap{
       case(sentenceSpan, _) =>
         val tokens = slab.covered[Token](sentenceSpan)

@@ -4,8 +4,8 @@ import edu.emory.clir.clearnlp.component.mode.pos.AbstractPOSTagger
 import edu.emory.clir.clearnlp.component.utils.{GlobalLexica, NLPUtils}
 import edu.emory.clir.clearnlp.dependency.DEPTree
 import edu.emory.clir.clearnlp.util.lang.TLanguage
-import epic.slab._
-import epic.trees.Span
+import org.sparkle.slate._
+import epic.slab.Sentence
 import org.sparkle.typesystem.basic.Token
 import org.sparkle.typesystem.ops._
 
@@ -14,7 +14,7 @@ import scala.collection.JavaConverters._
 
 abstract class PosTaggerImplBase[SENTENCE, TOKEN, POSTAG](
     languageCode: String, modelPath: String, paths: Seq[String])
-  extends StringAnalysisFunction[SENTENCE with TOKEN, TOKEN] with Serializable {
+  extends StringAnalysisFunction with Serializable {
 
   val sentenceOps: SentenceOps[SENTENCE]
   val tokenOps: TokenOps[TOKEN]
@@ -26,7 +26,7 @@ abstract class PosTaggerImplBase[SENTENCE, TOKEN, POSTAG](
   def getTagger(): AbstractPOSTagger = tagger
 
   override
-  def apply[In <: SENTENCE with TOKEN](slab: StringSlab[In]): StringSlab[In with POSTAG] = {
+  def apply(slab: StringSlate): StringSlate = {
     val posTaggedTokenSpans = sentenceOps.selectAllSentences(slab).flatMap{
       case (sentenceSpan, sentence) =>
         val tokens = tokenOps.selectTokens(slab, sentenceSpan).toIndexedSeq
@@ -60,11 +60,11 @@ class PosTaggerWithSparkleTypes(languageCode: String, modelPath: String, paths: 
 
 
 class PosTaggerWithEpicTypes(languageCode: String, modelPath: String, paths: Seq[String])
-  extends PosTaggerImplBase[Sentence, epic.slab.Token, PartOfSpeech](languageCode, modelPath, paths) {
+  extends PosTaggerImplBase[Sentence, epic.slab.Token, epic.slab.PartOfSpeech](languageCode, modelPath, paths) {
 
   override val sentenceOps: SentenceOps[Sentence] = EpicSentenceOps
   override val tokenOps: TokenOps[epic.slab.Token] = EpicTokenOps
-  override val posTagOps: PartOfSpeechOps[epic.slab.Token, PartOfSpeech] = EpicPartOfSpeechOps
+  override val posTagOps: PartOfSpeechOps[epic.slab.Token, epic.slab.PartOfSpeech] = EpicPartOfSpeechOps
 }
 
 

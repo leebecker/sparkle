@@ -9,9 +9,8 @@ import org.sparkle.slate.AnnotatedSpan.{EndFirstSpanOrdering, SpanOrdering}
 
 
 /**
-  * Blatently stolen from Epic's Slabs, but simpler as they don't track AnnotationTypes.  Annotation Types will
-  * Simply inherit from Annotation
-  * Immutable and lovely
+  * Blatantly stolen from Epic's Slabs, but simpler as they don't track AnnotationTypes.
+  * This was done to allow generic pipelines and slates to be manipulated in dataframes
   */
 trait Slate[ContentType, RegionType] {
 
@@ -51,11 +50,9 @@ trait Slate[ContentType, RegionType] {
     *  doesn't have this type. Sometimes you just have to cast... */
   def hasLayer[A :ClassTag]:Boolean
 
-  //def iterator[A >: AnnotationTypes: ClassTag](aType: ClassTag[A]): Iterator[(RegionType, A)]
-  def iterator[A : ClassTag](aType: ClassTag[A]): Iterator[(RegionType, A)]
+  def iterator[A : ClassTag]: Iterator[(RegionType, A)]
 
-  //def indexedSeq[A >: AnnotationTypes : ClassTag](aType: ClassTag[A]): IndexedSeq[(RegionType, A)]
-  def indexedSeq[A : ClassTag](aType: ClassTag[A]): IndexedSeq[(RegionType, A)]
+  def indexedSeq[A : ClassTag]: IndexedSeq[(RegionType, A)]
 
   /**
     * Returns annotations wholly contained in the region
@@ -64,23 +61,19 @@ trait Slate[ContentType, RegionType] {
     * @tparam A
     * @return
     */
-  //def covered[A >: AnnotationTypes: ClassTag](region: RegionType, aType: ClassTag[A]): IndexedSeq[(RegionType, A)]
-  def covered[A : ClassTag](region: RegionType, aType: ClassTag[A]): IndexedSeq[(RegionType, A)]
+  def covered[A : ClassTag](region: RegionType): IndexedSeq[(RegionType, A)]
 
 
   /**
    * Returns annotations that are entirely before the region
  *
    * @param region
-    * @param aType annotation type
    * @tparam A
    * @return
   */
-  //def preceding[A >: AnnotationTypes: ClassTag](region: RegionType, aType: ClassTag[A]): Iterator[(RegionType, A)]
-  def preceding[A : ClassTag](region: RegionType, aType: ClassTag[A]): Iterator[(RegionType, A)]
+  def preceding[A : ClassTag](region: RegionType): Iterator[(RegionType, A)]
 
-  //def following[A >: AnnotationTypes: ClassTag](region: RegionType, aType: ClassTag[A]): Iterator[(RegionType, A)]
-  def following[A : ClassTag](region: RegionType, aType: ClassTag[A]): Iterator[(RegionType, A)]
+  def following[A : ClassTag](region: RegionType): Iterator[(RegionType, A)]
 
   /*
   def stringRep[A >: AnnotationTypes: ClassTag](annotationType: ClassTag[A]) = {
@@ -170,22 +163,22 @@ object Slate {
       annotations.contains(implicitly[ClassTag[A]].runtimeClass)
     }
 
-    override def following[A : ClassTag](region: Span, aType: ClassTag[A]): Iterator[(Span, A)] = {
-      val annotations = selectAnnotations[A](aType)
+    override def following[A : ClassTag](region: Span): Iterator[(Span, A)] = {
+      val annotations = selectAnnotations[A]
       var pos = BinarySearch.interpolationSearch(annotations, (_:(Span, Any))._1.begin, region.end)
       if(pos < 0) pos = ~pos
       annotations.view(pos, annotations.length).iterator
     }
 
-    override def preceding[A : ClassTag](region: Span, aType: ClassTag[A]): Iterator[(Span, A)] = {
+    override def preceding[A : ClassTag](region: Span): Iterator[(Span, A)] = {
       val annotations = selectReverse[A]
       var pos = BinarySearch.interpolationSearch(annotations, (_:(Span, Any))._1.end, region.begin + 1)
       if(pos < 0) pos = ~pos
       annotations.view(0, pos).reverseIterator
     }
 
-    override def covered[A  : ClassTag](region: Span, aType: ClassTag[A]): IndexedSeq[(Span, A)] = {
-      val annotations = selectAnnotations[A](aType)
+    override def covered[A  : ClassTag](region: Span): IndexedSeq[(Span, A)] = {
+      val annotations = selectAnnotations[A]
       var begin = BinarySearch.interpolationSearch(annotations, (_:(Span, Any))._1.begin, region.begin)
       if(begin < 0) begin = ~begin
       var end = annotations.indexWhere(_._1.end > region.end, begin)
@@ -193,15 +186,15 @@ object Slate {
       annotations.slice(begin, end)
     }
 
-    override def iterator[A : ClassTag](aType: ClassTag[A]): Iterator[(Span, A)] = {
-      selectAnnotations[A](aType).iterator
+    override def iterator[A : ClassTag]: Iterator[(Span, A)] = {
+      selectAnnotations[A].iterator
     }
 
-    override def indexedSeq[A : ClassTag](aType: ClassTag[A]): IndexedSeq[(Span, A)] = {
-      selectAnnotations(aType)
+    override def indexedSeq[A : ClassTag]: IndexedSeq[(Span, A)] = {
+      selectAnnotations[A]
     }
 
-    private def selectAnnotations[A : ClassTag](aType: ClassTag[A]): IndexedSeq[(Span, A)] = {
+    private def selectAnnotations[A : ClassTag]: IndexedSeq[(Span, A)] = {
       annotations.getOrElse(implicitly[ClassTag[A]].runtimeClass, IndexedSeq.empty).asInstanceOf[IndexedSeq[(Span, A)]]
     }
 

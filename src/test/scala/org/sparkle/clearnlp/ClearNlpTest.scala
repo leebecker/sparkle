@@ -1,8 +1,8 @@
 package org.sparkle.clearnlp
 
-import epic.trees.Span
 import org.scalatest.FunSuite
-import epic.slab._
+import org.sparkle.slate._
+import epic.slab.Sentence
 import org.sparkle.typesystem.basic.Token
 import org.sparkle.typesystem.syntax.dependency._
 
@@ -11,13 +11,13 @@ class ClearNlpTest extends FunSuite {
   // =========
   // Analyzers
   // =========
-  val stringBegin = (slab: StringSlab[Span]) => slab
+  val stringBegin = (slab: StringSlate) => slab
 
   test("ClearNLP standalone sentence segmentation test") {
 
     val pipeline = new SentenceSegmenter()
 
-    val slab = pipeline(Slab( """This is sentence one.  Do you like sentence 2?  Mr. and Dr. Takahashi want to leave!  Go now!"""))
+    val slab = pipeline(Slate( """This is sentence one.  Do you like sentence 2?  Mr. and Dr. Takahashi want to leave!  Go now!"""))
     val sentences = slab.iterator[Sentence].toList
     assert(sentences.map { case (span, _) => slab.spanned(span) } === List(
       """This is sentence one.""",
@@ -31,14 +31,14 @@ class ClearNlpTest extends FunSuite {
   // =========
   test("ClearNLP sentence segmentation and tokenization test") {
 
-    val sentenceSegmenter: StringAnalysisFunction[Any, Sentence] = ClearNlpTokenization.sentenceSegmenter()
-    val tokenizer: StringAnalysisFunction[Sentence, Token] = ClearNlpTokenization.tokenizer()
-    val posTagger: StringAnalysisFunction[Sentence with Token, Token] = PosTagger.sparkleTypesPosTagger()
-    val mpAnalyzer: StringAnalysisFunction[Sentence with Token, Token] = MpAnalyzer
-    val depParser: StringAnalysisFunction[Sentence with Token, DependencyNode with DependencyRelation] = DependencyParser
+    val sentenceSegmenter: StringAnalysisFunction = ClearNlpTokenization.sentenceSegmenter()
+    val tokenizer: StringAnalysisFunction = ClearNlpTokenization.tokenizer()
+    val posTagger: StringAnalysisFunction = PosTagger.sparkleTypesPosTagger()
+    val mpAnalyzer: StringAnalysisFunction = MpAnalyzer
+    val depParser: StringAnalysisFunction = DependencyParser
 
     val pipeline = sentenceSegmenter andThen tokenizer andThen posTagger andThen MpAnalyzer andThen DependencyParser
-    val slab = pipeline(Slab( """This is sentence one.  Do you like sentence 2?  Mr. and Dr. Takahashi want to leave!  Go now!"""))
+    val slab = pipeline(Slate( """This is sentence one.  Do you like sentence 2?  Mr. and Dr. Takahashi want to leave!  Go now!"""))
     val sentences = slab.iterator[Sentence].toList
     assert(sentences.map{case (span, _) => slab.spanned(span)} === List(
       """This is sentence one.""",

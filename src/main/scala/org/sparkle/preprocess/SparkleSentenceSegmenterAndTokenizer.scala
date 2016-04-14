@@ -1,5 +1,6 @@
 package org.sparkle.preprocess
-import epic.slab.{StringAnalysisFunction, Sentence, Slab}
+import org.sparkle.slate.{StringAnalysisFunction, Slate}
+import epic.slab.Sentence
 import org.sparkle.typesystem.basic.{Token}
 
 /**
@@ -7,11 +8,11 @@ import org.sparkle.typesystem.basic.{Token}
   *
   *
   */
-trait SparkleSentenceSegmenterAndTokenizer extends StringAnalysisFunction[Any, Sentence with Token] with (String => Iterable[String]) with Serializable {
+trait SparkleSentenceSegmenterAndTokenizer extends StringAnalysisFunction with Serializable {
   override def toString = getClass.getName
 
   def apply(a: String):IndexedSeq[String] = {
-    val slab = Slab(a)
+    val slab = Slate(a)
     apply(slab).iterator[Sentence with Token].toIndexedSeq.map(s => slab.spanned(s._1))
   }
 }

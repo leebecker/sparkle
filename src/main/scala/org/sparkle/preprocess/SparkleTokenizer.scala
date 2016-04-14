@@ -15,23 +15,23 @@
 */
 package org.sparkle.preprocess
 
-import epic.slab._
-import epic.trees.Span
+import org.sparkle.slate._
 import org.sparkle.typesystem.basic.{Token}
+import epic.slab.Sentence
 
 
 /**
  * Abstract trait for tokenizers, which annotate sentence-segmented text with tokens. Tokenizers work
- * with both raw strings and [[org.sparkle.slab.StringSlab]]s.
+ * with both raw strings and [[org.sparkle.slate.StringSlate]]s.
  *
  * @author dlwh
  */
 @SerialVersionUID(1)
-trait SparkleTokenizer extends StringAnalysisFunction[Sentence, Token] with Serializable with (String=>IndexedSeq[String]) {
+trait SparkleTokenizer extends StringAnalysisFunction with Serializable with (String=>IndexedSeq[String]) {
   override def toString() = getClass.getName +"()"
 
   def apply(a: String):IndexedSeq[String] = {
-    val slab = apply(Slab(a).append(Span(0, a.length), Sentence()))
+    val slab = apply(Slate(a).append(Span(0, a.length), Sentence()))
     slab.iterator[Token].map(_._2.token).toIndexedSeq
   }
 

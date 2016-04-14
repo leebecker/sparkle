@@ -2,8 +2,7 @@ package org.sparkle.preprocess
 
 import java.util.regex.Pattern
 
-import epic.trees.Span
-import epic.slab._
+import org.sparkle.slate._
 import org.sparkle.typesystem.basic.Token
 
 import scala.collection.mutable.ArrayBuffer
@@ -19,7 +18,7 @@ case class RegexSplitTokenizer(pattern : String) extends SparkleTokenizer {
 
   private val regex = Pattern.compile(pattern)
 
-  def apply[In](slab: StringSlab[In]): StringSlab[In with Token] = {
+  def apply(slab: StringSlate): StringSlate = {
     val m = regex.matcher(slab.content)
 
     val spans = new ArrayBuffer[(Span, Token)]()

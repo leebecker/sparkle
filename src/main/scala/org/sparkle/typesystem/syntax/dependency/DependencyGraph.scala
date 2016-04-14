@@ -1,15 +1,40 @@
 package org.sparkle.typesystem.syntax.dependency
 
 import epic.slab.Sentence
-import epic.trees.Span
+import org.sparkle.slate.Span
 import org.sparkle.typesystem.basic.{Token}
 
 import scala.collection.mutable
+import scala.collection.JavaConverters._
+import collection.JavaConversions._
+
 
 
 /**
   * Created by leebecker on 1/8/16.
   */
+
+case class SparkleToken(word: Option[String])
+
+case class SparkleSentence(token: Seq[SparkleToken])
+
+case class SparkleDocument(sentence: Seq[SparkleSentence])
+
+object Quick {
+  def convertSparkleSentence(sentenceTokens: java.util.List[java.util.List[String]]) = {
+    new SparkleDocument(
+      sentence=sentenceTokens.seq.map(tokens =>
+        new SparkleSentence(token=tokens.seq.map(token => new SparkleToken(word=Some(token))))
+      )
+    )
+  }
+
+
+
+}
+
+
+
 
 trait DependencyNode {
   val token: Option[Token]
