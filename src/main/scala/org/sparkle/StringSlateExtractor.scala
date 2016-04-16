@@ -17,13 +17,12 @@ trait StringSlateExtractor[SCHEMA] {
 
 //object FooExtractor(flattener: String) extends StringSlateExtractor with Serializable {
 
-object TokenCountExtractor extends StringSlateExtractor {
+object TokenCountExtractor extends StringSlateExtractor[Int] {
   override def apply(slate: StringSlate): Int = slate.iterator[Token].size
 }
 
-class
 
-object DumbExtractor extends StringSlateExtractor {
+object DumbExtractor extends StringSlateExtractor[(String, String)]{
   import org.apache.spark.sql.functions._
 
   override def apply(slate: StringSlate) = Tuple2("y", "string")
@@ -31,14 +30,14 @@ object DumbExtractor extends StringSlateExtractor {
 }
 
 
+case class SentenceSchema(beginIndex: Int, endIndex: Int, tokens: Seq[TokenSchema])
 
-object NestedExtractor extends StringSlateExtractor {
+case class TokenSchema(token: String, pos: String, beginIndex: Int, endIndex: Int)
 
-  case class SentenceSchema(beginIndex: Int, endIndex: Int, tokens: Seq[TokenSchema])
+case class ResultSchema(text: String, sentences: Seq[SentenceSchema])
 
-  case class TokenSchema(token: String, pos: String, beginIndex: Int, endIndex: Int)
 
-  case class ResultSchema(text: String, sentences: Seq[SentenceSchema])
+object NestedExtractor extends StringSlateExtractor[ResultSchema] {
 
   def apply(slate: StringSlate) = {
 
