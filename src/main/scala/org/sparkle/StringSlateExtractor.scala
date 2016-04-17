@@ -17,7 +17,7 @@ trait StringSlateExtractor[SCHEMA] {
 
 //object FooExtractor(flattener: String) extends StringSlateExtractor with Serializable {
 
-object TokenCountExtractor extends StringSlateExtractor[Int] {
+object TokenCountExtractor extends StringSlateExtractor[Int] with Serializable{
   override def apply(slate: StringSlate): Int = slate.iterator[Token].size
 }
 
@@ -37,7 +37,7 @@ case class TokenSchema(token: String, pos: String, beginIndex: Int, endIndex: In
 case class ResultSchema(text: String, sentences: Seq[SentenceSchema])
 
 
-object NestedExtractor extends StringSlateExtractor[ResultSchema] {
+object NestedExtractor extends StringSlateExtractor[ResultSchema] with Serializable {
 
   def apply(slate: StringSlate) = {
 
