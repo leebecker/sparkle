@@ -1,20 +1,17 @@
 package org.sparkle
 
-import org.apache.poi.ss.formula.functions.T
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.{Param, ParamMap}
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Row, UserDefinedFunction}
+import org.apache.spark.sql.catalyst.ScalaReflection
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{StructField, StructType}
 import org.sparkle.slate._
-
 import scala.reflect.ClassTag
-import scala.reflect.runtime.universe._
-import org.apache.spark.sql.catalyst.ScalaReflection
-import org.sparkle.clearnlp._
+import scala.reflect.runtime.universe.TypeTag
 
 
 class SparkleSlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) extends Transformer {
@@ -36,7 +33,7 @@ class SparkleSlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: St
 
   def setTextCol(value: String): this.type = set(textCol, value)
 
-  type ExtractorsType1 = Tuple2[String, StringSlateExtractor[T1]]
+  type ExtractorsType1 = (String, StringSlateExtractor[T1])
 
   val extractors1: Param[Seq[ExtractorsType1]] = new Param(this, "extractors1",
     "Map of outputColumns and their StringSlateExtractor function objects")
@@ -56,9 +53,6 @@ class SparkleSlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: St
   }
 
   override def transform(dataset: DataFrame): DataFrame =  {
-    val tmpColName = s"{this.uid}_tmp"
-    val colNames = $(extractors1).map(_._1)
-
     val datasetRdd = dataset.rdd
     val textRdd = dataset.select(col($(textCol))).map(_.getAs[String](0))
     val extractedRdd = extractFromText(textRdd)
@@ -67,12 +61,11 @@ class SparkleSlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: St
     val datasetWithExtractor1Rdd = datasetRdd.zip(extractedRdd).map{case (rows, newCols) => Row(rows.toSeq ++ newCols: _*)}
 
     // Convert back to a DataFrame
-    import dataset.sqlContext.implicits._
     dataset.sqlContext.createDataFrame(datasetWithExtractor1Rdd, transformSchema(dataset.schema))
   }
 
-  def getExtractors(): Seq[(String, StringSlateExtractor[_])] = getExtractors1
-  def getExtractorSchemas(): Seq[StructField] = {
+  def getExtractors: Seq[(String, StringSlateExtractor[_])] = getExtractors1
+  def getExtractorSchemas: Seq[StructField] = {
     val dataType1 = ScalaReflection.schemaFor[T1].dataType
     for ((extractorName, extractor) <- $(extractors1))
       yield StructField(extractorName, dataType1)
@@ -85,18 +78,14 @@ class SparkleSlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: St
     val slateOutRdd = slateInRdd.map(getSlatePipelineFunc)
 
     // Run each of the extractors
-    val extractedColumnRdds = for ((extractorName, extractor) <- getExtractors) yield slateOutRdd.map(extractor(_))
-    makeZip(extractedColumnRdds)
+    val extractedColumnRDDs = for ((extractorName, extractor) <- getExtractors) yield slateOutRdd.map(extractor(_))
+    makeZip(extractedColumnRDDs)
   }
 
   override def copy(extra: ParamMap): org.apache.spark.ml.Transformer = defaultCopy(extra)
 
   @DeveloperApi
-  override def transformSchema(schemaIn: StructType): StructType = {
-    val dataType1 = ScalaReflection.schemaFor[T1].dataType
-    val schemas1 = getExtractorSchemas()
-    StructType(schemaIn ++ schemas1)
-  }
+  override def transformSchema(schemaIn: StructType): StructType = StructType(schemaIn ++ getExtractorSchemas)
 }
 
 class SparkleSlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag](override val uid: String)
@@ -104,7 +93,7 @@ class SparkleSlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag
 
   def this() = this(Identifiable.randomUID("sparkler_slate_extractor2"))
 
-  type ExtractorsType2 = Tuple2[String, StringSlateExtractor[T2]]
+  type ExtractorsType2 = (String, StringSlateExtractor[T2])
 
   val extractors2: Param[Seq[ExtractorsType2]] = new Param(this, "extractors2",
     "Map of outputColumns and their StringSlateExtractor function objects")
@@ -113,7 +102,7 @@ class SparkleSlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag
 
   def setExtractors2(value: Seq[ExtractorsType2]): this.type = set("extractors2", value)
 
-  override def getExtractors = super.getExtractors() ++ getExtractors2
+  override def getExtractors = super.getExtractors ++ getExtractors2
 
   override def getExtractorSchemas = {
     val dataType2 = ScalaReflection.schemaFor[T2].dataType
@@ -128,7 +117,7 @@ class SparkleSlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag
 
   def this() = this(Identifiable.randomUID("sparkler_slate_extractor3"))
 
-  type ExtractorsType3 = Tuple2[String, StringSlateExtractor[T3]]
+  type ExtractorsType3 = (String, StringSlateExtractor[T3])
 
   val extractors3: Param[Seq[ExtractorsType3]] = new Param(this, "extractors3",
     "Map of outputColumns and their StringSlateExtractor function objects")
@@ -137,7 +126,7 @@ class SparkleSlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag
 
   def setExtractors3(value: Seq[ExtractorsType3]): this.type = set("extractors3", value)
 
-  override def getExtractors = super.getExtractors() ++ getExtractors3
+  override def getExtractors = super.getExtractors ++ getExtractors3
 
   override def getExtractorSchemas = {
     val dataType = ScalaReflection.schemaFor[T2].dataType

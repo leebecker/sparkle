@@ -1,7 +1,6 @@
 package org.sparkle
 
 import epic.slab.Sentence
-import org.apache.spark.sql.types._
 import org.sparkle.slate.{Span, StringSlate}
 import org.sparkle.typesystem.basic.Token
 
@@ -11,22 +10,12 @@ import org.sparkle.typesystem.basic.Token
 /**
   * Created by leebecker on 4/14/16.
   */
-trait StringSlateExtractor[SCHEMA] {
+trait StringSlateExtractor[SCHEMA] extends Serializable {
   def apply(slate: StringSlate): SCHEMA
 }
 
-//object FooExtractor(flattener: String) extends StringSlateExtractor with Serializable {
-
-object TokenCountExtractor extends StringSlateExtractor[Int] with Serializable{
+object TokenCountExtractor extends StringSlateExtractor[Int] {
   override def apply(slate: StringSlate): Int = slate.iterator[Token].size
-}
-
-
-object DumbExtractor extends StringSlateExtractor[(String, String)]{
-  import org.apache.spark.sql.functions._
-
-  override def apply(slate: StringSlate) = Tuple2("y", "string")
-
 }
 
 
