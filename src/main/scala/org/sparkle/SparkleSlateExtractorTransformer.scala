@@ -45,39 +45,6 @@ class SparkleSlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: St
 
   def setExtractors1(value: Seq[ExtractorsType1]): this.type = set("extractors1", value)
 
-  /*
-  lazy val comboUdf1 = generateUdf($(extractors1))
-
-  def generateUdf[T:TypeTag](extractorList: Seq[Tuple2[String, StringSlateExtractor[T]]]) = {
-    val f = (text: String) => {
-      val slate = Slate(text)
-      val x = for ((key, extractor) <- extractorList) yield (key, extractor(slate))
-      x
-    }
-    udf((text: String) => f)
-  }
-  */
-
-  /* this is not possible because we do not have access to the text until it is in the UDF, so there is no way to propagage
-  def runExtractors[T](df: DataFrame, slate: StringSlate, extractorsToRun: Seq[Tuple2[String, StringSlateExtractor[T]]]): DataFrame = {
-    extractorsToRun match {
-      case Nil => df
-      case (outputCol, extractor)::remainingExtractors => {
-        val func = udf(()=>extractor(slate))
-        runExtractors(df.withColumn(outputCol, func()), slate, remainingExtractors)
-      }
-    }
-    df
-  }
-  */
-
-  def extractMapToColumns(df: DataFrame, mapColName: String, colNames: Seq[String]): DataFrame = colNames match {
-    case Nil => df
-    case colName::remaining => extractMapToColumns(
-      df.withColumn(colName, col(s"$mapColName.$colName")), mapColName, remaining)
-    case _ => df
-  }
-
   def makeZip(s: Seq[RDD[_]]): RDD[Seq[_]] = {
     if (s.length == 1)
       s.head.map(e => Seq(e))
@@ -96,16 +63,6 @@ class SparkleSlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: St
     val textRdd = dataset.select(col($(textCol))).map(_.getAs[String](0))
     val extractedRdd = extractFromText(textRdd)
 
-    /*
-    val datasetRdd = dataset.rdd
-    val textRdd = dataset.select(col($(textCol))).map(_.getAs[String](0))
-    val slateInRdd = textRdd.map(Slate(_))
-    val slateOutRdd = slateInRdd.map(org.sparkle.clearnlp.SentenceSegmenterAndTokenizer(_))
-
-    // Run each of the extractors
-    val extractedColumnRdds = for ((extractorName, extractor) <- $(extractors1)) yield slateOutRdd.map(extractor(_))
-    val extractedRdd = makeZip(extractedColumnRdds)
-    */
     // Combine extracted output with original input in a RowRDD
     val datasetWithExtractor1Rdd = datasetRdd.zip(extractedRdd).map{case (rows, newCols) => Row(rows.toSeq ++ newCols: _*)}
 
@@ -114,32 +71,21 @@ class SparkleSlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: St
     dataset.sqlContext.createDataFrame(datasetWithExtractor1Rdd, transformSchema(dataset.schema))
   }
 
+  def getExtractors(): Seq[(String, StringSlateExtractor[_])] = getExtractors1
+  def getExtractorSchemas(): Seq[StructField] = {
+    val dataType1 = ScalaReflection.schemaFor[T1].dataType
+    for ((extractorName, extractor) <- $(extractors1))
+      yield StructField(extractorName, dataType1)
+  }
 
-
-  //var pipeline2: StringAnalysisFunction = null
-  //def setPipeline2(value: StringAnalysisFunction): Unit = {
-    //pipeline2 = value
-  //}
-
-
-  //val f = (slate: StringSlate) => getPipelineContainer.pipeline(slate)
 
   def extractFromText(textRdd: RDD[String]): RDD[Seq[_]] = {
     val slateInRdd = textRdd.map(Slate(_))
     // Run the pipeline
-    //val sentenceSegmenterAndTokenizer: StringAnalysisFunction = SentenceSegmenterAndTokenizer
-    //val posTagger: StringAnalysisFunction = PosTagger.sparkleTypesPosTagger()
-    //val mpAnalyzer: StringAnalysisFunction = MpAnalyzer
-
-    //val pipeline2 = sentenceSegmenterAndTokenizer andThen posTagger andThen mpAnalyzer
-    //val slateOutRdd = slateInRdd.map(ConveniencePipelines.posTaggedPipeline(_))
     val slateOutRdd = slateInRdd.map(getSlatePipelineFunc)
 
-    //val slateOutRdd = slateInRdd.map(task)
-    //val slateOutRdd = slateInRdd.map(getPipeline(_))
-
     // Run each of the extractors
-    val extractedColumnRdds = for ((extractorName, extractor) <- $(extractors1)) yield slateOutRdd.map(extractor(_))
+    val extractedColumnRdds = for ((extractorName, extractor) <- getExtractors) yield slateOutRdd.map(extractor(_))
     makeZip(extractedColumnRdds)
   }
 
@@ -148,9 +94,64 @@ class SparkleSlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: St
   @DeveloperApi
   override def transformSchema(schemaIn: StructType): StructType = {
     val dataType1 = ScalaReflection.schemaFor[T1].dataType
-    val schemas1 = for ((extractorName, extractor) <- $(extractors1))
-      yield StructField(extractorName, dataType1)
+    val schemas1 = getExtractorSchemas()
     StructType(schemaIn ++ schemas1)
   }
 }
 
+class SparkleSlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag](override val uid: String)
+  extends SparkleSlateExtractorTransformer[T1] {
+
+  def this() = this(Identifiable.randomUID("sparkler_slate_extractor2"))
+
+  type ExtractorsType2 = Tuple2[String, StringSlateExtractor[T2]]
+
+  val extractors2: Param[Seq[ExtractorsType2]] = new Param(this, "extractors2",
+    "Map of outputColumns and their StringSlateExtractor function objects")
+
+  def getExtractors2: Seq[ExtractorsType2] = $(extractors2)
+
+  def setExtractors2(value: Seq[ExtractorsType2]): this.type = set("extractors2", value)
+
+  override def getExtractors = super.getExtractors() ++ getExtractors2
+
+  override def getExtractorSchemas = {
+    val dataType2 = ScalaReflection.schemaFor[T2].dataType
+    val schema2 = for ((extractorName, extractor) <- $(extractors2))
+      yield StructField(extractorName, dataType2)
+    super.getExtractorSchemas ++ schema2
+  }
+}
+
+ class SparkleSlateExtractorTransformer3[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag, T3:TypeTag:ClassTag](override val uid: String)
+  extends SparkleSlateExtractorTransformer2[T1,T2] {
+
+  def this() = this(Identifiable.randomUID("sparkler_slate_extractor3"))
+
+  type ExtractorsType3 = Tuple2[String, StringSlateExtractor[T3]]
+
+  val extractors3: Param[Seq[ExtractorsType3]] = new Param(this, "extractors3",
+    "Map of outputColumns and their StringSlateExtractor function objects")
+
+  def getExtractors3: Seq[ExtractorsType3] = $(extractors3)
+
+  def setExtractors3(value: Seq[ExtractorsType3]): this.type = set("extractors3", value)
+
+  override def getExtractors = super.getExtractors() ++ getExtractors3
+
+  override def getExtractorSchemas = {
+    val dataType = ScalaReflection.schemaFor[T2].dataType
+    val schema = for ((extractorName, extractor) <- getExtractors3)
+      yield StructField(extractorName, dataType)
+    super.getExtractorSchemas ++ schema
+  }
+}
+
+
+
+
+object SparkleSlateExtractorTransformer {
+  def create[T1:TypeTag:ClassTag] = new SparkleSlateExtractorTransformer[T1]()
+  def create[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag] = new SparkleSlateExtractorTransformer2[T1, T2]()
+  def create[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag, T3:TypeTag:ClassTag] = new SparkleSlateExtractorTransformer3[T1, T2, T3]()
+}
