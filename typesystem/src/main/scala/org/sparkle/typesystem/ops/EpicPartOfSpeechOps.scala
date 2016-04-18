@@ -1,5 +1,6 @@
 package org.sparkle.typesystem.ops
 
+/*
 import epic.slab.{PartOfSpeech, Token}
 import org.sparkle.slate._
 
@@ -17,3 +18,4 @@ object EpicPartOfSpeechOps extends PartOfSpeechOps[Token, PartOfSpeech]{
 
   override def createPosTag(tag: String, token: Token): PartOfSpeech = PartOfSpeech(tag)
 }
+*/

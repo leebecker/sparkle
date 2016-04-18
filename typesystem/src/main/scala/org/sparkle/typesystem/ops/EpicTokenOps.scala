@@ -1,5 +1,6 @@
 package org.sparkle.typesystem.ops
 
+/*
 import org.sparkle.slate._
 import epic.slab.Token
 
@@ -17,3 +18,4 @@ object EpicTokenOps extends TokenOps[Token]{
   override def addTokens(slate: StringSlate, tokens: TraversableOnce[(Span, Token)]):
       StringSlate = slate.addLayer[Token](tokens)
 }
+*/

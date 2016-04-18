@@ -1,5 +1,6 @@
 package org.sparkle.typesystem.ops
 
+/*
 import org.sparkle.slate._
 import epic.slab.Sentence
 
@@ -18,3 +19,4 @@ object EpicSentenceOps extends SentenceOps[epic.slab.Sentence] {
   override def addSentences(slate: StringSlate, sentences: TraversableOnce[(Span, Sentence)]):
       StringSlate = slate.addLayer[Sentence](sentences)
 }
+*/
