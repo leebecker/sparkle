@@ -1,15 +1,29 @@
-name := "sparkle-core"
-organization := "com.sparkle"
-version := "0.1-SNAPSHOT"
+lazy val commonSettings = Seq(
+  name := "sparkle-core",
+  organization := "com.sparkle",
+  version := "0.1-SNAPSHOT",
+  scalaVersion := "2.10.6",
+  // Require Java 1.8
+  initialize := {
+    val required = "1.8"
+    val current  = sys.props("java.specification.version")
+    assert(current == required, s"Unsupported JDK: java.specification.version $current != $required")
+  }
+)
 
-scalaVersion := "2.10.6"
+// Declare projects
+lazy val core = project.
+  settings(commonSettings: _*)
 
-// Require Java 1.8
-initialize := {
-  val required = "1.8"
-  val current  = sys.props("java.specification.version")
-  assert(current == required, s"Unsupported JDK: java.specification.version $current != $required")
-}
+lazy val typesystem = project.
+  settings(commonSettings: _*)
+
+lazy val clearnlp = project.
+  settings(commonSettings: _*)
+
+lazy val opennlp = project.
+  settings(commonSettings: _*)
+
 
 libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-reflect" % "2.10.6"
@@ -29,8 +43,7 @@ libraryDependencies += "jline" % "jline" % "2.14.1"
 
 
 lazy val scalaNlpAndDependencies = Seq(
-  "org.scalanlp" % "epic_2.10" % "0.4-SNAPSHOT",
-  //"org.scalanlp" % "epic_2.10" % "0.3.1",
+  "org.scalanlp" % "epic_2.10" % "0.3.1",
   "org.spire-math" % "spire_2.10" % "0.11.0"
 )
 libraryDependencies ++= scalaNlpAndDependencies

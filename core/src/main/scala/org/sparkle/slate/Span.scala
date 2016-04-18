@@ -1,7 +1,5 @@
 package org.sparkle.slate
 
-import spire.syntax.cfor
-
 /*
  Copyright 2012 David Hall
  Licensed under the Apache License, Version 2.0 (the "License")

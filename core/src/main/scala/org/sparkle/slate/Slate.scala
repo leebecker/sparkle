@@ -5,12 +5,12 @@ import epic.util.BinarySearch
 import scala.reflect.ClassTag
 import org.sparkle.slate.AnnotatedSpan.{EndFirstSpanOrdering, SpanOrdering}
 
-//trait AnnotationTypes
-
-
 /**
-  * Blatantly stolen from Epic's Slabs, but simpler as they don't track AnnotationTypes.
-  * This was done to allow generic pipelines and slates to be manipulated in dataframes
+  * Blatantly modified (err... stolen) from Epic's Slabs.  This removed the notion of Input and Output annotation types
+  * to allow for more flexibility in passing pipelines and extractors to Spark methods.
+  *
+  * A Slate is a central data structure for annotating content by regions.  Most typically, this will be a
+  * Text with Spans.
   */
 trait Slate[ContentType, RegionType] {
 
@@ -56,7 +56,7 @@ trait Slate[ContentType, RegionType] {
 
   /**
     * Returns annotations wholly contained in the region
- *
+    *
     * @param region
     * @tparam A
     * @return
@@ -65,12 +65,12 @@ trait Slate[ContentType, RegionType] {
 
 
   /**
-   * Returns annotations that are entirely before the region
- *
-   * @param region
-   * @tparam A
-   * @return
-  */
+    * Returns annotations that are entirely before the region
+    *
+    * @param region
+    * @tparam A
+    * @return
+    */
   def preceding[A : ClassTag](region: RegionType): Iterator[(RegionType, A)]
 
   def following[A : ClassTag](region: RegionType): Iterator[(RegionType, A)]
@@ -130,7 +130,7 @@ object Slate {
     * @tparam ContentType
     */
   private[slate] class SortedSequenceSlate[ContentType]
-   (val content: ContentType,
+  (val content: ContentType,
     val annotations: Map[Class[_], Vector[(Span, Any)]] = Map.empty,
     val reverseAnnotations: Map[Class[_], Vector[(Span, Any)]] = Map.empty)(implicit extract: ExtractRegion[Span, ContentType]) extends Slate[ContentType, Span] {
 
