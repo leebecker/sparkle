@@ -127,7 +127,7 @@ object ClearNlpTokenization {
   * Prerequisites: StringSlate object <br>
   * Outputs: new StringSlate object with Sentence and Token annotations <br>
   */
-object SentenceSegmenterAndTokenizer extends SparkleSentenceSegmenterAndTokenizer {
+object SentenceSegmenterAndTokenizer extends SparkleSentenceSegmenterAndTokenizer[Sentence, Token] {
   // FIXME parameterize language code and pre-load tokenizer
   val defaultLanguageCode = TLanguage.ENGLISH.toString
   val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(defaultLanguageCode))

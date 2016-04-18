@@ -1,6 +1,6 @@
 package org.sparkle.slate
 
-import epic.util.BinarySearch
+import org.sparkle.util.BinarySearch
 
 import scala.reflect.ClassTag
 import org.sparkle.slate.AnnotatedSpan.{EndFirstSpanOrdering, SpanOrdering}

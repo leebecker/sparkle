@@ -1,5 +1,7 @@
 package org.sparkle.slate
 
+import spire.syntax.cfor
+
 /*
  Copyright 2012 David Hall
  Licensed under the Apache License, Version 2.0 (the "License")
@@ -40,6 +42,7 @@ class Span(val encoded: Long) extends AnyVal with Serializable {
 
   /**
     * Returns true if this and other overlap but containment or equality does not hold.
+ *
     * @param other
     * @return
     */

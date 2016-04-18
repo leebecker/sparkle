@@ -17,18 +17,18 @@ lazy val core = project.
 
 lazy val typesystem = project.
   settings(commonSettings: _*).
-  dependsOn(core)
+  dependsOn(core % "test->test;compile->compile")
 
 lazy val util = project.
   settings(commonSettings: _*).
-  dependsOn(core).
-  dependsOn(typesystem)
+  dependsOn(core % "test->test;compile->compile").
+  dependsOn(typesystem % "test->test;compile->compile")
 
 lazy val clearnlp = project.
   settings(commonSettings: _*).
-  dependsOn(core).
-  dependsOn(typesystem).
-  dependsOn(util)
+  dependsOn(core % "test->test;compile->compile").
+  dependsOn(typesystem % "test->test;compile->compile").
+  dependsOn(util % "test->test;compile->compile")
 
 lazy val opennlp = project.
   settings(commonSettings: _*)
