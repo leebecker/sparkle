@@ -13,20 +13,22 @@ import org.sparkle.slate._
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
+import org.apache.spark.sql.catalyst.ScalaReflection
+import org.sparkle.clearnlp._
 
 
 class SparkleSlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) extends Transformer {
   def this() = this(Identifiable.randomUID("sparkler_slate_extractor"))
 
+  val slatePipelineFunc: Param[(StringSlate)=>(StringSlate)] = new Param(this, "slatePipelineFunc",
+    "A function which accepts a slate structure and returns a new one. " +
+    "Most often this will wrap up a StringAnalysisFunction, but it needn't be.")
 
-  val pipeline: Param[StringAnalysisFunction] = new Param(this, "pipeline", "a pipeline which consumes a Slate structure and produces a Slate structure with resulting analysis")
+  def getSlatePipelineFunc: (StringSlate)=>(StringSlate) = $(slatePipelineFunc)
 
-  def getPipeline: StringAnalysisFunction = $(pipeline)
-
-  def setPipeline(value: StringAnalysisFunction): this.type = set(pipeline, value)
+  def setSlatePipelineFunc(value: (StringSlate)=>(StringSlate)): this.type = set(slatePipelineFunc, value)
 
   //@transient var pipeline: StringAnalysisFunction = _
-  lazy val pipelineObj = getPipeline
 
   val textCol: Param[String] = new Param(this, "textCol", "name of column containing text to be analyzed")
 
@@ -90,63 +92,65 @@ class SparkleSlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: St
     val tmpColName = s"{this.uid}_tmp"
     val colNames = $(extractors1).map(_._1)
 
-    import org.apache.spark.sql.catalyst.ScalaReflection
+    val datasetRdd = dataset.rdd
+    val textRdd = dataset.select(col($(textCol))).map(_.getAs[String](0))
+    val extractedRdd = extractFromText(textRdd)
+
+    /*
     val datasetRdd = dataset.rdd
     val textRdd = dataset.select(col($(textCol))).map(_.getAs[String](0))
     val slateInRdd = textRdd.map(Slate(_))
-    @transient val slateOutRdd = slateInRdd.map(org.sparkle.clearnlp.SentenceSegmenterAndTokenizer(_))
+    val slateOutRdd = slateInRdd.map(org.sparkle.clearnlp.SentenceSegmenterAndTokenizer(_))
 
-      //pipelineObj(_))
-    val schema1 = ScalaReflection.schemaFor[T1].dataType
-
-    val schemaAndColumn = for ((extractorName, extractor) <- $(extractors1))
-      yield (StructField(extractorName, schema1),  slateOutRdd.map(slate => extractor(slate)))
-
-    val columns = makeZip(schemaAndColumn.map(_._2))
-    val schemas = schemaAndColumn.map(_._1)
-    val schema = StructType(dataset.schema ++ schemas)
-    val datasetWithExtractor1Rdd = datasetRdd.zip(columns).map{case (rows, newCols) => Row(rows.toSeq ++ newCols: _*)}
-    import dataset.sqlContext.implicits._
-    dataset.sqlContext.createDataFrame(datasetWithExtractor1Rdd, schema)
-
-
-    /*
-    // Run pipeline and extractors UDF  on text column
-    val df = dataset.withColumn(tmpColName, comboUdf1(col($(textCol))))
-    // Now pull out data from map structure into separate columns
-    extractMapToColumns(df, tmpColName, colNames).drop(tmpColName)
+    // Run each of the extractors
+    val extractedColumnRdds = for ((extractorName, extractor) <- $(extractors1)) yield slateOutRdd.map(extractor(_))
+    val extractedRdd = makeZip(extractedColumnRdds)
     */
+    // Combine extracted output with original input in a RowRDD
+    val datasetWithExtractor1Rdd = datasetRdd.zip(extractedRdd).map{case (rows, newCols) => Row(rows.toSeq ++ newCols: _*)}
+
+    // Convert back to a DataFrame
+    import dataset.sqlContext.implicits._
+    dataset.sqlContext.createDataFrame(datasetWithExtractor1Rdd, transformSchema(dataset.schema))
+  }
+
+
+
+  //var pipeline2: StringAnalysisFunction = null
+  //def setPipeline2(value: StringAnalysisFunction): Unit = {
+    //pipeline2 = value
+  //}
+
+
+  //val f = (slate: StringSlate) => getPipelineContainer.pipeline(slate)
+
+  def extractFromText(textRdd: RDD[String]): RDD[Seq[_]] = {
+    val slateInRdd = textRdd.map(Slate(_))
+    // Run the pipeline
+    //val sentenceSegmenterAndTokenizer: StringAnalysisFunction = SentenceSegmenterAndTokenizer
+    //val posTagger: StringAnalysisFunction = PosTagger.sparkleTypesPosTagger()
+    //val mpAnalyzer: StringAnalysisFunction = MpAnalyzer
+
+    //val pipeline2 = sentenceSegmenterAndTokenizer andThen posTagger andThen mpAnalyzer
+    //val slateOutRdd = slateInRdd.map(ConveniencePipelines.posTaggedPipeline(_))
+    val slateOutRdd = slateInRdd.map(getSlatePipelineFunc)
+
+    //val slateOutRdd = slateInRdd.map(task)
+    //val slateOutRdd = slateInRdd.map(getPipeline(_))
+
+    // Run each of the extractors
+    val extractedColumnRdds = for ((extractorName, extractor) <- $(extractors1)) yield slateOutRdd.map(extractor(_))
+    makeZip(extractedColumnRdds)
   }
 
   override def copy(extra: ParamMap): org.apache.spark.ml.Transformer = defaultCopy(extra)
 
   @DeveloperApi
-  override def transformSchema(schema: StructType): StructType = ???
+  override def transformSchema(schemaIn: StructType): StructType = {
+    val dataType1 = ScalaReflection.schemaFor[T1].dataType
+    val schemas1 = for ((extractorName, extractor) <- $(extractors1))
+      yield StructField(extractorName, dataType1)
+    StructType(schemaIn ++ schemas1)
+  }
 }
 
-//// DAMMIT DAMMIT DAMMIT.. this won't work because it reruns the slate generation.
-//class SparkleSlateExtractorTransformer2[T1:TypeTag, T2:TypeTag](override val uid: String) extends SparkleSlateExtractorTransformer[T1] {
-//  type ExtractorsType2 = Tuple2[String, StringSlateExtractor[T2]]
-//
-//  val extractors2: Param[Seq[ExtractorsType1]] = new Param(this, "extractors1",
-//    "Map of outputColumns and their StringSlateExtractor function objects")
-//
-//  def getExtractors2: Seq[ExtractorsType1] = $(extractors2)
-//
-//  def setExtractors2(value: Seq[ExtractorsType1]): this.type = set("extractors1", value)
-//
-//  /*
-//  lazy val comboUdf2 = generateUdf($(extractors2))
-//  override def transform(dataset: DataFrame): DataFrame =  {
-//    val tmpColName = s"{this.uid}_tmp2"
-//    val colNames = $(extractors2).map(_._1)
-//
-//    super.transform(dataset)
-//    val df = super.transform(dataset).
-//      withColumn(tmpColName, comboUdf2(col($(textCol))))
-//    // Now pull out data from map structure into separate columns
-//    extractMapToColumns(df, tmpColName, colNames).drop(tmpColName)
-//
-//  }
-//  */
-//}
