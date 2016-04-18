@@ -11,7 +11,7 @@ trait SparkleSentenceSegmenterAndTokenizer extends StringAnalysisFunction with S
   override def toString = getClass.getName
 
   def apply(a: String):IndexedSeq[String] = {
-    val slab = Slate(a)
-    apply(slab).iterator[Sentence with Token].toIndexedSeq.map(s => slab.spanned(s._1))
+    val slate = Slate(a)
+    apply(slate).iterator[Sentence with Token].toIndexedSeq.map(s => slate.spanned(s._1))
   }
 }

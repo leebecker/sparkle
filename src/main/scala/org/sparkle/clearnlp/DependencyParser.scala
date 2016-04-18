@@ -14,8 +14,8 @@ import scala.collection.mutable
 /**
   * SparkLE wrapper for ClearNLP Dependency Parser<p>
   *
-  * Prerequisites: Slab object with Sentence and Token annotations <br>
-  * Outputs: new Slab object with Sentence and Tokens with pos field set <br>
+  * Prerequisites: Slate object with Sentence and Token annotations <br>
+  * Outputs: new Slate object with Sentence and Tokens with pos field set <br>
   */
 object DependencyParser extends StringAnalysisFunction with Serializable {
   val defaultLanguageCode = TLanguage.ENGLISH.toString
@@ -26,18 +26,18 @@ object DependencyParser extends StringAnalysisFunction with Serializable {
   GlobalLexica.initDistributionalSemanticsWords(paths)
   val parser = NLPUtils.getDEPParser(TLanguage.getType(defaultLanguageCode), parserModelPath, new DEPConfiguration("root"))
 
-  def apply(slab: StringSlate): StringSlate = {
-    val depGraphSpans = slab.iterator[Sentence].map {
+  def apply(slate: StringSlate): StringSlate = {
+    val depGraphSpans = slate.iterator[Sentence].map {
       case (sentenceSpan, sentence) =>
-        val tokens = slab.covered[Token](sentenceSpan).seq
-        val tokenStrings = tokens.map { case (tokenSpan, _) => slab.spanned(tokenSpan) }
+        val tokens = slate.covered[Token](sentenceSpan).seq
+        val tokenStrings = tokens.map { case (tokenSpan, _) => slate.spanned(tokenSpan) }
 
         val tree = new DEPTree(tokens.length)
         for (((span, token), i) <- tokens.zipWithIndex) {
-          val node = new DEPNode(i + 1, slab.spanned(span), token.pos.get, token.lemma.get, new DEPFeat())
+          val node = new DEPNode(i + 1, slate.spanned(span), token.pos.get, token.lemma.get, new DEPFeat())
           tree.add(node)
         }
-        val a  = slab.iterator[Token]
+        val a  = slate.iterator[Token]
         this.parser.process(tree)
         val (nodes, relations) = depTreeToDepGraph((sentenceSpan, sentence), tokens, tree)
         nodes.zip(relations)
@@ -45,7 +45,7 @@ object DependencyParser extends StringAnalysisFunction with Serializable {
     }.toList
     val nodes = depGraphSpans.flatMap(x => x._1)
     val relations = depGraphSpans.flatMap(x => x._2)
-    val s = slab.addLayer[DependencyNode](nodes).addLayer[DependencyRelation](relations)
+    val s = slate.addLayer[DependencyNode](nodes).addLayer[DependencyRelation](relations)
     s
   }
 

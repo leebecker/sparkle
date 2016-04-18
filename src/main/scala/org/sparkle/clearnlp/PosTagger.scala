@@ -25,11 +25,11 @@ abstract class PosTaggerImplBase[SENTENCE, TOKEN, POSTAG](
   def getTagger(): AbstractPOSTagger = tagger
 
   override
-  def apply(slab: StringSlate): StringSlate = {
-    val posTaggedTokenSpans = sentenceOps.selectAllSentences(slab).flatMap{
+  def apply(slate: StringSlate): StringSlate = {
+    val posTaggedTokenSpans = sentenceOps.selectAllSentences(slate).flatMap{
       case (sentenceSpan, sentence) =>
-        val tokens = tokenOps.selectTokens(slab, sentenceSpan).toIndexedSeq
-        val tokenStrings = tokens.map { case (tokenSpan, _) => slab.spanned(tokenSpan)}
+        val tokens = tokenOps.selectTokens(slate, sentenceSpan).toIndexedSeq
+        val tokenStrings = tokens.map { case (tokenSpan, _) => slate.spanned(tokenSpan)}
 
         // Run ClearNLP pos tagger
         val clearNlpDepTree = new DEPTree(tokenStrings)
@@ -43,8 +43,8 @@ abstract class PosTaggerImplBase[SENTENCE, TOKEN, POSTAG](
 
     // Strangely this needs to be split into two lines or else
     // we get a compiler error
-    val resultSlab = posTagOps.addPosTags(slab, posTaggedTokenSpans)
-    resultSlab
+    val resultSlate = posTagOps.addPosTags(slate, posTaggedTokenSpans)
+    resultSlate
   }
 
 }

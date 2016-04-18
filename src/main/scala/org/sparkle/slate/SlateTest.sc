@@ -31,17 +31,17 @@ trait Tokenizer extends StringAnalysisFunction with Serializable with (String=>I
 
   def apply(a: String):IndexedSeq[String] = {
     val x = Slate(a).append(Span(0, a.length), Sentence())
-    val slab = apply(Slate(a).append(Span(0, a.length), Sentence()))
-    slab.iterator(classTag[Token]).map(_._2.token).toIndexedSeq
+    val slate = apply(Slate(a).append(Span(0, a.length), Sentence()))
+    slate.iterator(classTag[Token]).map(_._2.token).toIndexedSeq
   }
 
 }
 
 object RegexTokenizer extends Tokenizer {
-  def apply(slab: StringSlate) =
+  def apply(slate: StringSlate) =
   // the [Token] is required because of https://issues.scala-lang.org/browse/SI-7647
-    slab.addLayer(slab.iterator(classTag[Sentence]).flatMap{ case (region, sentence) =>
-      "\\p{L}+|\\p{P}+|\\p{N}+".r.findAllMatchIn(slab.content.substring(region.begin, region.end)).map(m =>
+    slate.addLayer(slate.iterator(classTag[Sentence]).flatMap{ case (region, sentence) =>
+      "\\p{L}+|\\p{P}+|\\p{N}+".r.findAllMatchIn(slate.content.substring(region.begin, region.end)).map(m =>
         Span(region.begin + m.start, region.begin + m.end) -> Token(m.group(0)))
     })
 }

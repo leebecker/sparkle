@@ -9,11 +9,11 @@ import epic.slab.Token
 object EpicTokenOps extends TokenOps[Token]{
   override def create(text: String): Token = Token(text)
 
-  override def selectAllTokens[In <: Token](slab: StringSlate): TraversableOnce[(Span, Token)] = slab.iterator[Token]
+  override def selectAllTokens[In <: Token](slate: StringSlate): TraversableOnce[(Span, Token)] = slate.iterator[Token]
 
-  override def selectTokens[In <: Token](slab: StringSlate, coveringSpan: Span): TraversableOnce[(Span, Token)] =
-    slab.covered[Token](coveringSpan)
+  override def selectTokens[In <: Token](slate: StringSlate, coveringSpan: Span): TraversableOnce[(Span, Token)] =
+    slate.covered[Token](coveringSpan)
 
-  override def addTokens(slab: StringSlate, tokens: TraversableOnce[(Span, Token)]):
-      StringSlate = slab.addLayer[Token](tokens)
+  override def addTokens(slate: StringSlate, tokens: TraversableOnce[(Span, Token)]):
+      StringSlate = slate.addLayer[Token](tokens)
 }

@@ -30,8 +30,8 @@ trait SparkleTokenizer extends StringAnalysisFunction with Serializable with (St
   override def toString() = getClass.getName +"()"
 
   def apply(a: String):IndexedSeq[String] = {
-    val slab = apply(Slate(a).append(Span(0, a.length), Sentence()))
-    slab.iterator[Token].map(_._2.token).toIndexedSeq
+    val slate = apply(Slate(a).append(Span(0, a.length), Sentence()))
+    slate.iterator[Token].map(_._2.token).toIndexedSeq
   }
 
 }

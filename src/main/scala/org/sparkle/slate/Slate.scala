@@ -46,7 +46,7 @@ trait Slate[ContentType, RegionType] {
     }
   }
 
-  /** Queries whether we have annotations of this type, even if the slab
+  /** Queries whether we have annotations of this type, even if the slate
     *  doesn't have this type. Sometimes you just have to cast... */
   def hasLayer[A :ClassTag]:Boolean
 
@@ -123,7 +123,7 @@ object Slate {
   }
 
   /**
-    * This slab should be more efficient, especially for longer documents. It maintains the annotations in sorted order.
+    * This slate should be more efficient, especially for longer documents. It maintains the annotations in sorted order.
     *
     * @param content
     * @param annotations
@@ -157,7 +157,7 @@ object Slate {
     }
 
 
-    /** Queries whether we have annotations of this type, even if the slab
+    /** Queries whether we have annotations of this type, even if the slate
       * doesn't have this type. Sometimes you just have to cast... */
     override def hasLayer[A: ClassTag]: Boolean = {
       annotations.contains(implicitly[ClassTag[A]].runtimeClass)

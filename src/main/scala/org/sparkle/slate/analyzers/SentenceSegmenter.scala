@@ -16,8 +16,8 @@ trait SentenceSegmenter extends StringAnalysisFunction with Serializable {
   override def toString = getClass.getName
 
   def apply(a: String):IndexedSeq[String] = {
-    val slab = Slate(a)
-    apply(slab).iterator(classTag[Sentence]).toIndexedSeq.map(s => slab.spanned(s._1))
+    val slate = Slate(a)
+    apply(slate).iterator(classTag[Sentence]).toIndexedSeq.map(s => slate.spanned(s._1))
   }
 
 }
