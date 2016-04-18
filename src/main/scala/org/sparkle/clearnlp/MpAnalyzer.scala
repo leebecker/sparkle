@@ -4,9 +4,8 @@ package org.sparkle.clearnlp
 import edu.emory.clir.clearnlp.component.utils.{GlobalLexica, NLPUtils}
 import edu.emory.clir.clearnlp.dependency.DEPTree
 import edu.emory.clir.clearnlp.util.lang.TLanguage
-import epic.slab._
-import epic.trees.Span
-import org.sparkle.typesystem.basic.{Token}
+import org.sparkle.slate._
+import org.sparkle.typesystem.basic.{Sentence,Token}
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -14,18 +13,18 @@ import scala.collection.JavaConverters._
 /**
   * SparkLE wrapper for ClearNLP MpAnalyzer<p>
   *
-  * Prerequisites: Slab object with Sentence and Token annotations <br>
-  * Outputs: new Slab object with Sentence and Tokens with pos field set <br>
+  * Prerequisites: Slate object with Sentence and Token annotations <br>
+  * Outputs: new Slate object with Sentence and Tokens with pos field set <br>
   */
-object MpAnalyzer extends StringAnalysisFunction[Sentence with Token, Token] with Serializable {
+object MpAnalyzer extends StringAnalysisFunction with Serializable {
   val defaultLanguageCode = TLanguage.ENGLISH.toString
   val mpAnalyzer = NLPUtils.getMPAnalyzer(TLanguage.getType(defaultLanguageCode));
 
-  def apply[In <: Token with Sentence](slab: StringSlab[In]): StringSlab[In with Token] =  {
-    val lemmatizedTaggedTokenSpans = slab.iterator[Sentence].flatMap{
+  def apply(slate: StringSlate): StringSlate =  {
+    val lemmatizedTaggedTokenSpans = slate.iterator[Sentence].flatMap{
       case(sentenceSpan, _) =>
-        val tokens = slab.covered[Token](sentenceSpan)
-        val tokenStrings = tokens.map { case (tokenSpan, _) => slab.spanned(tokenSpan) }
+        val tokens = slate.covered[Token](sentenceSpan)
+        val tokenStrings = tokens.map { case (tokenSpan, _) => slate.spanned(tokenSpan) }
 
         // Run ClearNLP pos tagger
         val clearNlpDepTree = new DEPTree(tokenStrings)
@@ -39,9 +38,9 @@ object MpAnalyzer extends StringAnalysisFunction[Sentence with Token, Token] wit
         }
     }
 
-    // Remove old tokens and add new pos-tagged ones to slab
+    // Remove old tokens and add new pos-tagged ones to slate
     // FIXME - potentially dangerous if operating over specialized windows
-    val res = slab.removeLayer[Token].addLayer[Token](lemmatizedTaggedTokenSpans)
+    val res = slate.removeLayer[Token].addLayer[Token](lemmatizedTaggedTokenSpans)
     res
   }
 

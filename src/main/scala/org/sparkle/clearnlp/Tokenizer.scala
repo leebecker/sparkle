@@ -5,12 +5,12 @@ import java.io.InputStream
 import edu.emory.clir.clearnlp.component.utils.NLPUtils
 import edu.emory.clir.clearnlp.tokenization.AbstractTokenizer
 import edu.emory.clir.clearnlp.util.lang.TLanguage
-import epic.trees.Span
+import org.sparkle.slate.Span
 
-import epic.slab._
+import org.sparkle.slate._
 import org.apache.commons.io.IOUtils
 import org.sparkle.preprocess.{SparkleTokenizer, SparkleSentenceSegmenterAndTokenizer}
-import org.sparkle.typesystem.basic.Token
+import org.sparkle.typesystem.basic.{Sentence,Token}
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._
@@ -28,22 +28,22 @@ import scala.reflect.ClassTag
 
 
 object Tokenize {
-  def segmentSentences[In](tokenizer: AbstractTokenizer, slab: StringSlab[In]) = {
+  def segmentSentences(tokenizer: AbstractTokenizer, slate: StringSlate) = {
 
-    // Convert slab text to an input stream and run with ClearNLP
-    val stream: InputStream = IOUtils.toInputStream(slab.content)
+    // Convert slate text to an input stream and run with ClearNLP
+    val stream: InputStream = IOUtils.toInputStream(slate.content)
     val sentencesAsTokens = tokenizer.segmentize(stream)
 
     // Convert token strings in each sentence into Token span annotations
     val sentenceAsTokenSpans = sentencesAsTokens.map(sentenceTokens => {
       var offset = 0
-      slab.content.indexOf()
+      slate.content.indexOf()
       val tokens = new ListBuffer[Tuple2[Span, Token]]()
       for (tokenString:String <- sentenceTokens) {
-        val tokenBegin = slab.content.indexOf(tokenString, offset)
+        val tokenBegin = slate.content.indexOf(tokenString, offset)
         val tokenEnd = tokenBegin + tokenString.length
         if (tokenBegin >= 0 && tokenEnd >= 0) {
-          tokens += Tuple2(Span(tokenBegin, tokenEnd), Token(slab.content.substring(tokenBegin, tokenEnd)))
+          tokens += Tuple2(Span(tokenBegin, tokenEnd), Token(slate.content.substring(tokenBegin, tokenEnd)))
         }
         offset = tokenEnd
       }
@@ -54,14 +54,14 @@ object Tokenize {
     val sentenceSpans = sentenceAsTokenSpans.map(sentenceTokenSpans =>
       Tuple2(Span(sentenceTokenSpans.head._1.begin, sentenceTokenSpans.last._1.end), Sentence()))
 
-    slab.addLayer[Sentence](sentenceSpans)
+    slate.addLayer[Sentence](sentenceSpans)
   }
 
-  def tokenize[In<:Sentence](tokenizer: AbstractTokenizer, slab: StringSlab[In]) = {
+  def tokenize[In<:Sentence](tokenizer: AbstractTokenizer, slate: StringSlate) = {
 
-    val tokenSpans = for ((windowSpan, window) <-slab.iterator[Sentence]) yield {
+    val tokenSpans = for ((windowSpan, window) <-slate.iterator[Sentence]) yield {
       // Run tokenizer on window
-      val windowText = slab.spanned(windowSpan)
+      val windowText = slate.spanned(windowSpan)
       val stream: InputStream = IOUtils.toInputStream(windowText)
       val windowSentenceTokens = tokenizer.segmentize(stream)
 
@@ -74,7 +74,7 @@ object Tokenize {
           val tokenBegin = windowSpan.begin + windowTokenBegin
           val tokenEnd = tokenBegin + tokenString.length
           if (windowTokenBegin >= 0 && tokenString.length >= 0) {
-            tokens += Tuple2(Span(tokenBegin, tokenEnd), Token(slab.spanned(Span(tokenBegin, tokenEnd))))
+            tokens += Tuple2(Span(tokenBegin, tokenEnd), Token(slate.spanned(Span(tokenBegin, tokenEnd))))
           }
           offset = windowTokenBegin + tokenString.length
         }
@@ -86,7 +86,7 @@ object Tokenize {
       windowTokenSpans
     }
     val x = tokenSpans.flatten
-    val s = slab.addLayer[Token](x)
+    val s = slate.addLayer[Token](x)
     s
   }
 
@@ -98,18 +98,18 @@ class Tokenizer(languageCode: String=TLanguage.ENGLISH.toString) extends Sparkle
 
   val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(languageCode))
 
-  override def apply[In<:Sentence](slab: StringSlab[In]): StringSlab[In with Token] = {
-    // Convert slab text to an input stream and run with ClearNLP
-    val s = Tokenize.tokenize(tokenizer, slab)
+  override def apply(slate: StringSlate): StringSlate = {
+    // Convert slate text to an input stream and run with ClearNLP
+    val s = Tokenize.tokenize(tokenizer, slate)
     s
   }
 }
 
-class SentenceSegmenter(languageCode:String=TLanguage.ENGLISH.toString) extends epic.preprocess.SentenceSegmenter {
+class SentenceSegmenter(languageCode:String=TLanguage.ENGLISH.toString) extends org.sparkle.slate.analyzers.SentenceSegmenter {
   val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(languageCode))
 
-  override def apply[In](slab: epic.slab.StringSlab[In]): StringSlab[In with Sentence] = {
-    Tokenize.segmentSentences[In](tokenizer, slab)
+  override def apply(slate: StringSlate): StringSlate = {
+    Tokenize.segmentSentences(tokenizer, slate)
   }
 }
 
@@ -124,30 +124,30 @@ object ClearNlpTokenization {
 /**
   * SparkLE wrapper for ClearNLP Sentence Segmenter + Tokenizer Combo <p>
   *
-  * Prerequisites: StringSlab object <br>
-  * Outputs: new StringSlab object with Sentence and Token annotations <br>
+  * Prerequisites: StringSlate object <br>
+  * Outputs: new StringSlate object with Sentence and Token annotations <br>
   */
 object SentenceSegmenterAndTokenizer extends SparkleSentenceSegmenterAndTokenizer {
   // FIXME parameterize language code and pre-load tokenizer
   val defaultLanguageCode = TLanguage.ENGLISH.toString
   val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(defaultLanguageCode))
 
-  override def apply[In](slab: StringSlab[In]): StringSlab[In with Sentence with Token] =  {
+  override def apply(slate: StringSlate): StringSlate =  {
 
-    // Convert slab text to an input stream and run with ClearNLP
-    val stream: InputStream = IOUtils.toInputStream(slab.content)
+    // Convert slate text to an input stream and run with ClearNLP
+    val stream: InputStream = IOUtils.toInputStream(slate.content)
     val sentencesAsTokens = tokenizer.segmentize(stream)
 
     // Convert token strings in each sentence into Token span annotations
     val sentenceAsTokenSpans = sentencesAsTokens.map(sentenceTokens => {
       var offset = 0
-      slab.content.indexOf()
+      slate.content.indexOf()
       val tokens = new ListBuffer[Tuple2[Span, Token]]()
       for (tokenString:String <- sentenceTokens) {
-        val tokenBegin = slab.content.indexOf(tokenString, offset)
+        val tokenBegin = slate.content.indexOf(tokenString, offset)
         val tokenEnd = tokenBegin + tokenString.length
         if (tokenBegin >= 0 && tokenEnd >= 0) {
-          tokens += Tuple2(Span(tokenBegin, tokenEnd), Token(slab.content.substring(tokenBegin, tokenEnd)))
+          tokens += Tuple2(Span(tokenBegin, tokenEnd), Token(slate.content.substring(tokenBegin, tokenEnd)))
         }
         offset = tokenEnd
       }
@@ -162,10 +162,9 @@ object SentenceSegmenterAndTokenizer extends SparkleSentenceSegmenterAndTokenize
     val tokenSpans = sentenceAsTokenSpans.flatMap(t=> t)
 
     // Create new Add annotations to a
-    //if(start != slab.content.length)
-    //spans += Span(start, slab.content.length) -> Token(slab.content.substring(start, slab.content.length))
-    var s = slab.addLayer[Sentence](sentenceSpans).addLayer[Token](tokenSpans)
+    //if(start != slate.content.length)
+    //spans += Span(start, slate.content.length) -> Token(slate.content.substring(start, slate.content.length))
+    var s = slate.addLayer[Sentence](sentenceSpans).addLayer[Token](tokenSpans)
     s
-    //slab
   }
 }

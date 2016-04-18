@@ -1,17 +1,17 @@
 package org.sparkle.preprocess
-import epic.slab.{StringAnalysisFunction, Sentence, Slab}
-import org.sparkle.typesystem.basic.{Token}
+import org.sparkle.slate.{StringAnalysisFunction, Slate}
+import org.sparkle.typesystem.basic.{Sentence,Token}
 
 /**
   * Created by leebecker on 2/4/16.
   *
   *
   */
-trait SparkleSentenceSegmenterAndTokenizer extends StringAnalysisFunction[Any, Sentence with Token] with (String => Iterable[String]) with Serializable {
+trait SparkleSentenceSegmenterAndTokenizer extends StringAnalysisFunction with Serializable {
   override def toString = getClass.getName
 
   def apply(a: String):IndexedSeq[String] = {
-    val slab = Slab(a)
-    apply(slab).iterator[Sentence with Token].toIndexedSeq.map(s => slab.spanned(s._1))
+    val slate = Slate(a)
+    apply(slate).iterator[Sentence with Token].toIndexedSeq.map(s => slate.spanned(s._1))
   }
 }

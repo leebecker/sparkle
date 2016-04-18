@@ -1,18 +1,15 @@
 package org.sparkle.opennlp
 
-import java.io.InputStream
-
-import epic.slab._
-import epic.trees.Span
+import org.sparkle.slate._
 import opennlp.tools.sentdetect.{SentenceDetectorME, SentenceModel}
-import org.sparkle.typesystem.basic.{Token}
-import org.sparkle.typesystem.ops.{EpicSentenceOps, SentenceOps}
+import org.sparkle.typesystem.ops.{SparkleSentenceOps, SentenceOps}
+import org.sparkle.typesystem.basic.Sentence
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._
 
 abstract class OpenNlpSentenceSegmenterImplBase[SENTENCE_TYPE]( sentenceModelPath: String)
-  extends StringAnalysisFunction[Any, SENTENCE_TYPE] with Serializable {
+  extends StringAnalysisFunction with Serializable {
 
   val multipleNewlinesRegex = "(?m)\\s*\\n\\s*\\n\\s*".r
   val leadingWhitespaceRegex = "^\\s+".r
@@ -30,15 +27,15 @@ abstract class OpenNlpSentenceSegmenterImplBase[SENTENCE_TYPE]( sentenceModelPat
     (offsets1.toList ::: offsets2.toList).sortWith((x,y) => x < y)
   }
 
-  override def apply[In <: Any](slab: Slab[String, Span, In]): Slab[String, Span, In with SENTENCE_TYPE] = {
-    // Convert slab text to an input stream and run with ClearNLP
-    val sentenceOffsets = getSentenceOffsets(slab.content)
+  override def apply(slate: StringSlate): StringSlate = {
+    // Convert slate text to an input stream and run with ClearNLP
+    val sentenceOffsets = getSentenceOffsets(slate.content)
     val sentences = ListBuffer[Tuple2[Span, SENTENCE_TYPE]]()
 
     var begin = 0
     var end = 0
     val textOffset = 0
-    val text = slab.content
+    val text = slate.content
 
     // advance the first sentence to first non-whitespace char
     leadingWhitespaceRegex.findFirstMatchIn(text).foreach(m => begin += m.group(0).length)
@@ -67,7 +64,7 @@ abstract class OpenNlpSentenceSegmenterImplBase[SENTENCE_TYPE]( sentenceModelPat
 
     }
 
-    val updated = sentenceOps.addSentences(slab, sentences)
+    val updated = sentenceOps.addSentences(slate, sentences)
     updated
   }
 
@@ -75,7 +72,7 @@ abstract class OpenNlpSentenceSegmenterImplBase[SENTENCE_TYPE]( sentenceModelPat
 
 class OpenNlpSentenceSegmenter(sentenceModelPath: String)
   extends OpenNlpSentenceSegmenterImplBase[Sentence](sentenceModelPath) {
-  override val sentenceOps: SentenceOps[Sentence] = EpicSentenceOps
+  override val sentenceOps: SentenceOps[Sentence] = SparkleSentenceOps
 }
 
 object OpenNlpSentenceSegmenter {
@@ -84,7 +81,7 @@ object OpenNlpSentenceSegmenter {
 
 }
 
-object SentenceSegmenter extends epic.preprocess.SentenceSegmenter {
+object SentenceSegmenter extends org.sparkle.slate.analyzers.SentenceSegmenter {
   // FIXME parameterize language code and pre-load tokenizer
   val sentenceModelPath = "/opennlp/models/en-sent.bin"
   val multipleNewlinesRegex = "(?m)\\s*\\n\\s*\\n\\s*".r
@@ -103,16 +100,16 @@ object SentenceSegmenter extends epic.preprocess.SentenceSegmenter {
   }
 
 
-  override def apply[In](slab: StringSlab[In]): StringSlab[In with Sentence] = {
+  override def apply(slate: StringSlate): StringSlate = {
 
-    // Convert slab text to an input stream and run with ClearNLP
-    val sentenceOffsets = getSentenceOffsets(slab.content)
+    // Convert slate text to an input stream and run with ClearNLP
+    val sentenceOffsets = getSentenceOffsets(slate.content)
     val sentences = ListBuffer[Tuple2[Span, Sentence]]()
 
     var begin = 0
     var end = 0
     val textOffset = 0
-    val text = slab.content
+    val text = slate.content
 
     // advance the first sentence to first non-whitespace char
     leadingWhitespaceRegex.findFirstMatchIn(text).foreach(m => begin += m.group(0).length)
@@ -143,7 +140,7 @@ object SentenceSegmenter extends epic.preprocess.SentenceSegmenter {
 
 
 
-    slab.addLayer[Sentence](sentences)
+    slate.addLayer[Sentence](sentences)
   }
 }
 

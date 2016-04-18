@@ -1,7 +1,7 @@
 package org.sparkle.typesystem.ops
 
-import epic.slab.{Sentence, StringSlab}
-import epic.trees.Span
+import org.sparkle.slate._
+import epic.slab.Sentence
 
 /**
   * Created by leebecker on 2/5/16.
@@ -9,12 +9,12 @@ import epic.trees.Span
 object EpicSentenceOps extends SentenceOps[epic.slab.Sentence] {
   override def createSentence(): Sentence = Sentence()
 
-  override def selectAllSentences[In <: Sentence](slab: StringSlab[In]): TraversableOnce[(Span, Sentence)] =
-    slab.iterator[Sentence]
+  override def selectAllSentences[In <: Sentence](slate: StringSlate): TraversableOnce[(Span, Sentence)] =
+    slate.iterator[Sentence]
 
-  override def selectSentences[In <: Sentence](slab: StringSlab[In], coveringSpan: Span): TraversableOnce[(Span, Sentence)] =
-    slab.covered[Sentence](coveringSpan)
+  override def selectSentences[In <: Sentence](slate: StringSlate, coveringSpan: Span): TraversableOnce[(Span, Sentence)] =
+    slate.covered[Sentence](coveringSpan)
 
-  override def addSentences[In](slab: StringSlab[In], sentences: TraversableOnce[(Span, Sentence)]):
-      StringSlab[In with Sentence] = slab.addLayer[Sentence](sentences)
+  override def addSentences(slate: StringSlate, sentences: TraversableOnce[(Span, Sentence)]):
+      StringSlate = slate.addLayer[Sentence](sentences)
 }

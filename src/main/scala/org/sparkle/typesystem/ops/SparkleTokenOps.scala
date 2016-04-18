@@ -1,7 +1,6 @@
 package org.sparkle.typesystem.ops
 
-import epic.slab.StringSlab
-import epic.trees.Span
+import org.sparkle.slate._
 import org.sparkle.typesystem.basic.Token
 
 /**
@@ -10,11 +9,11 @@ import org.sparkle.typesystem.basic.Token
 object SparkleTokenOps extends TokenOps[Token]{
   override def create(text: String): Token = Token(text)
 
-  override def selectAllTokens[In <: Token](slab: StringSlab[In]): TraversableOnce[(Span, Token)] = slab.iterator[Token]
+  override def selectAllTokens[In <: Token](slate: StringSlate): TraversableOnce[(Span, Token)] = slate.iterator[Token]
 
-  override def selectTokens[In <: Token](slab: StringSlab[In], coveringSpan: Span): TraversableOnce[(Span, Token)] =
-    slab.covered[Token](coveringSpan)
+  override def selectTokens[In <: Token](slate: StringSlate, coveringSpan: Span): TraversableOnce[(Span, Token)] =
+    slate.covered[Token](coveringSpan)
 
-  override def addTokens[In](slab: StringSlab[In], tokens: TraversableOnce[(Span, Token)]):
-      StringSlab[In with Token] = slab.addLayer[Token](tokens)
+  override def addTokens(slate: StringSlate, tokens: TraversableOnce[(Span, Token)]):
+      StringSlate = slate.addLayer[Token](tokens)
 }

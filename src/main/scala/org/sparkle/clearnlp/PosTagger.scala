@@ -4,9 +4,8 @@ import edu.emory.clir.clearnlp.component.mode.pos.AbstractPOSTagger
 import edu.emory.clir.clearnlp.component.utils.{GlobalLexica, NLPUtils}
 import edu.emory.clir.clearnlp.dependency.DEPTree
 import edu.emory.clir.clearnlp.util.lang.TLanguage
-import epic.slab._
-import epic.trees.Span
-import org.sparkle.typesystem.basic.Token
+import org.sparkle.slate._
+import org.sparkle.typesystem.basic.{Sentence,Token}
 import org.sparkle.typesystem.ops._
 
 import scala.collection.JavaConversions._
@@ -14,7 +13,7 @@ import scala.collection.JavaConverters._
 
 abstract class PosTaggerImplBase[SENTENCE, TOKEN, POSTAG](
     languageCode: String, modelPath: String, paths: Seq[String])
-  extends StringAnalysisFunction[SENTENCE with TOKEN, TOKEN] with Serializable {
+  extends StringAnalysisFunction with Serializable {
 
   val sentenceOps: SentenceOps[SENTENCE]
   val tokenOps: TokenOps[TOKEN]
@@ -26,11 +25,11 @@ abstract class PosTaggerImplBase[SENTENCE, TOKEN, POSTAG](
   def getTagger(): AbstractPOSTagger = tagger
 
   override
-  def apply[In <: SENTENCE with TOKEN](slab: StringSlab[In]): StringSlab[In with POSTAG] = {
-    val posTaggedTokenSpans = sentenceOps.selectAllSentences(slab).flatMap{
+  def apply(slate: StringSlate): StringSlate = {
+    val posTaggedTokenSpans = sentenceOps.selectAllSentences(slate).flatMap{
       case (sentenceSpan, sentence) =>
-        val tokens = tokenOps.selectTokens(slab, sentenceSpan).toIndexedSeq
-        val tokenStrings = tokens.map { case (tokenSpan, _) => slab.spanned(tokenSpan)}
+        val tokens = tokenOps.selectTokens(slate, sentenceSpan).toIndexedSeq
+        val tokenStrings = tokens.map { case (tokenSpan, _) => slate.spanned(tokenSpan)}
 
         // Run ClearNLP pos tagger
         val clearNlpDepTree = new DEPTree(tokenStrings)
@@ -44,8 +43,8 @@ abstract class PosTaggerImplBase[SENTENCE, TOKEN, POSTAG](
 
     // Strangely this needs to be split into two lines or else
     // we get a compiler error
-    val resultSlab = posTagOps.addPosTags(slab, posTaggedTokenSpans)
-    resultSlab
+    val resultSlate = posTagOps.addPosTags(slate, posTaggedTokenSpans)
+    resultSlate
   }
 
 }
@@ -60,11 +59,11 @@ class PosTaggerWithSparkleTypes(languageCode: String, modelPath: String, paths: 
 
 
 class PosTaggerWithEpicTypes(languageCode: String, modelPath: String, paths: Seq[String])
-  extends PosTaggerImplBase[Sentence, epic.slab.Token, PartOfSpeech](languageCode, modelPath, paths) {
+  extends PosTaggerImplBase[epic.slab.Sentence, epic.slab.Token, epic.slab.PartOfSpeech](languageCode, modelPath, paths) {
 
-  override val sentenceOps: SentenceOps[Sentence] = EpicSentenceOps
+  override val sentenceOps: SentenceOps[epic.slab.Sentence] = EpicSentenceOps
   override val tokenOps: TokenOps[epic.slab.Token] = EpicTokenOps
-  override val posTagOps: PartOfSpeechOps[epic.slab.Token, PartOfSpeech] = EpicPartOfSpeechOps
+  override val posTagOps: PartOfSpeechOps[epic.slab.Token, epic.slab.PartOfSpeech] = EpicPartOfSpeechOps
 }
 
 

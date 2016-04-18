@@ -1,20 +1,20 @@
 package org.sparkle.spark
 
 import org.scalatest._
-import epic.slab._
+import org.sparkle.slate._
 import org.sparkle.clearnlp._
 import org.sparkle.preprocess.RegexSplitTokenizer
-import org.sparkle.typesystem.basic.{Token}
+import org.sparkle.typesystem.basic.Token
 
 import org.apache.spark.{SparkConf, SparkContext}
 
 object SparkTestUtils {
-  val sentenceSegmenterAndTokenizer: StringAnalysisFunction[Any, Sentence with Token] = SentenceSegmenterAndTokenizer
-  val posTagger: StringAnalysisFunction[Sentence with Token, Token] = PosTagger.sparkleTypesPosTagger()
-  val mpAnalyzer: StringAnalysisFunction[Sentence with Token, Token] = MpAnalyzer
+  val sentenceSegmenterAndTokenizer: StringAnalysisFunction = SentenceSegmenterAndTokenizer
+  val posTagger: StringAnalysisFunction = PosTagger.sparkleTypesPosTagger()
+  val mpAnalyzer: StringAnalysisFunction = MpAnalyzer
 
   val pipeline = sentenceSegmenterAndTokenizer andThen posTagger andThen mpAnalyzer
-  //def opennlpPipeline(s: StringSlab[Any]) = org.sparkle.opennlp.SentenceSegmenter.apply(s)
+  //def opennlpPipeline(s: StringSlate[Any]) = org.sparkle.opennlp.SentenceSegmenter.apply(s)
   val regexPipeline = new RegexSplitTokenizer("""[\W]+\s*""")
 }
 
@@ -31,13 +31,13 @@ class SparkTest extends FunSuite with Matchers {
   //import sqlContext.implicits._
 
   test("SparkWithRegexTokenizer") {
-    val slabs = Seq(
-        Slab("""Words are fun to count.  Counting words is what we Mr. Jones O.K. do."""),
-        Slab("""Whether it be one word, two words or more, we our word count will score."""),
-        Slab("""Wording this last set of words to count is wordy.""")
+    val slates = Seq(
+        Slate("""Words are fun to count.  Counting words is what we Mr. Jones O.K. do."""),
+        Slate("""Whether it be one word, two words or more, we our word count will score."""),
+        Slate("""Wording this last set of words to count is wordy.""")
       )
-      val slabRdd = sc.parallelize(slabs).map(slab => SparkTestUtils.regexPipeline(slab))
-      val sentences = slabRdd.map {slab => (slab, slab.iterator[Token].toSeq)}.flatMap{case(slab, tokens) => tokens.map(t => slab.spanned(t._1))}
+      val slateRDD = sc.parallelize(slates).map(slate => SparkTestUtils.regexPipeline(slate))
+      val sentences = slateRDD.map {slate => (slate, slate.iterator[Token].toSeq)}.flatMap{case(slate, tokens) => tokens.map(t => slate.spanned(t._1))}
       sentences.foreach(println("*", _))
 
   }
@@ -46,34 +46,33 @@ class SparkTest extends FunSuite with Matchers {
   test("SparkWithOpenNlp") {
     //This test will fail if Spark is running multithreaded.
 
-     val slabs = Seq(
-      Slab("""Words are fun to count.  Counting words is what we do."""),
-      Slab("""Whether it be one word, two words or more, we our word count will score."""),
-      Slab("""Wording this last set of words to count is wordy.""")
+     val slates = Seq(
+      Slate("""Words are fun to count.  Counting words is what we do."""),
+      Slate("""Whether it be one word, two words or more, we our word count will score."""),
+      Slate("""Wording this last set of words to count is wordy.""")
     )
-    val slabRdd = sc.parallelize(slabs).map(SparkTestUtils.opennlpPipeline)
-    val sentences = slabRdd.map {slab => (slab, slab.iterator[Sentence].toSeq)}.flatMap{case(slab, sentences) => sentences.map(s => slab.spanned(s._1))}
+    val slateRDD = sc.parallelize(slates).map(SparkTestUtils.opennlpPipeline)
+    val sentences = slateRDD.map {slate => (slate, slate.iterator[Sentence].toSeq)}.flatMap{case(slate, sentences) => sentences.map(s => slate.spanned(s._1))}
     sentences.foreach(println("*", _))
 
   }
   */
 
   test("TokenCountsWithSpark") {
-    val slabs = Seq(
-      Slab("""Words are fun to count.  Counting words is what we do."""),
-      Slab("""Whether it be one word, two words or more, we our word count will score."""),
-      Slab("""Wording this last set of words to count is wordy.""")
+    val slates = Seq(
+      Slate("""Words are fun to count.  Counting words is what we do."""),
+      Slate("""Whether it be one word, two words or more, we our word count will score."""),
+      Slate("""Wording this last set of words to count is wordy.""")
     )
 
 
-    val mySlab0 = Slab("""Words are fun to count.  Counting words is what we do.""")
-    val mySlab1 = SparkTestUtils.sentenceSegmenterAndTokenizer(mySlab0)
-    val mySlab2 = PosTagger.sparkleTypesPosTagger()(mySlab1)
-    val mySlab3 = MpAnalyzer(mySlab2)
+    val mySlate0 = Slate("""Words are fun to count.  Counting words is what we do.""")
+    val mySlate1 = SparkTestUtils.sentenceSegmenterAndTokenizer(mySlate0)
+    val mySlate2 = PosTagger.sparkleTypesPosTagger()(mySlate1)
+    val mySlate3 = MpAnalyzer(mySlate2)
 
-    val slabRdd = sc.parallelize(slabs).map(slab => SparkTestUtils.pipeline(slab))
-
-    val tokensRdd = slabRdd.map { slab => slab.iterator[Token].toSeq}.flatMap(tokens => tokens)
+    val slateRDD = sc.parallelize(slates).map(slate => SparkTestUtils.pipeline(slate))
+    val tokensRdd = slateRDD.map { slate => slate.iterator[Token].toSeq}.flatMap(tokens => tokens)
 
     val wordCountsRdd = tokensRdd.map{ case (_, token) => (token.token, 1) }.reduceByKey(_ + _)
     val wordCounts = wordCountsRdd.collectAsMap()
