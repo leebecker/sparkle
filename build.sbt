@@ -19,8 +19,16 @@ lazy val typesystem = project.
   settings(commonSettings: _*).
   dependsOn(core)
 
+lazy val util = project.
+  settings(commonSettings: _*).
+  dependsOn(core).
+  dependsOn(typesystem)
+
 lazy val clearnlp = project.
-  settings(commonSettings: _*)
+  settings(commonSettings: _*).
+  dependsOn(core).
+  dependsOn(typesystem).
+  dependsOn(util)
 
 lazy val opennlp = project.
   settings(commonSettings: _*)
@@ -31,6 +39,7 @@ libraryDependencies ++= Seq(
   //"org.scala-lang.modules" % "scala-xml_2.11" % "1.0.4"
 )
 
+/*
 // Setup spark dependencies with scope=provide
 lazy val sparkAndDependencies = Seq(
   "org.apache.spark" % "spark-core_2.10" % "1.6.1",
@@ -40,15 +49,19 @@ lazy val sparkAndDependencies = Seq(
   "org.apache.spark" % "spark-repl_2.10" % "1.6.1"
 )
 libraryDependencies ++= sparkAndDependencies.map(_ % "provided")
+*/
 libraryDependencies += "jline" % "jline" % "2.14.1"
 
 
+/*
 lazy val scalaNlpAndDependencies = Seq(
   "org.scalanlp" % "epic_2.10" % "0.3.1",
   "org.spire-math" % "spire_2.10" % "0.11.0"
 )
 libraryDependencies ++= scalaNlpAndDependencies
+*/
 
+/*
 lazy val clearNlpAndDependencies = Seq(
   "edu.emory.clir" % "clearnlp" % "3.2.0",
   "edu.emory.clir" % "clearnlp-dictionary" % "3.2",
@@ -60,6 +73,7 @@ lazy val clearNlpAndDependencies = Seq(
   "edu.emory.clir" % "clearnlp-general-en-srl" % "3.0"
 )
 libraryDependencies ++= clearNlpAndDependencies
+*/
 
 libraryDependencies += "org.apache.opennlp" % "opennlp-tools" % "1.6.0" exclude ("jwnl", "jwnl")
 

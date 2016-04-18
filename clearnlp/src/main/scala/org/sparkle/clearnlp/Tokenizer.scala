@@ -105,7 +105,7 @@ class Tokenizer(languageCode: String=TLanguage.ENGLISH.toString) extends Sparkle
   }
 }
 
-class SentenceSegmenter(languageCode:String=TLanguage.ENGLISH.toString) extends org.sparkle.slate.analyzers.SentenceSegmenter {
+class SentenceSegmenter(languageCode:String=TLanguage.ENGLISH.toString) extends org.sparkle.preprocess.SparkleSentenceSegmenter {
   val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(languageCode))
 
   override def apply(slate: StringSlate): StringSlate = {

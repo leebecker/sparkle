@@ -58,6 +58,7 @@ class PosTaggerWithSparkleTypes(languageCode: String, modelPath: String, paths: 
 }
 
 
+/*
 class PosTaggerWithEpicTypes(languageCode: String, modelPath: String, paths: Seq[String])
   extends PosTaggerImplBase[epic.slab.Sentence, epic.slab.Token, epic.slab.PartOfSpeech](languageCode, modelPath, paths) {
 
@@ -65,6 +66,7 @@ class PosTaggerWithEpicTypes(languageCode: String, modelPath: String, paths: Seq
   override val tokenOps: TokenOps[epic.slab.Token] = EpicTokenOps
   override val posTagOps: PartOfSpeechOps[epic.slab.Token, epic.slab.PartOfSpeech] = EpicPartOfSpeechOps
 }
+*/
 
 
 object PosTagger {
@@ -74,11 +76,13 @@ object PosTagger {
     paths: Seq[String] = "brown-rcv1.clean.tokenized-CoNLL03.txt-c1000-freq1.txt.xz" :: Nil
   ) = new PosTaggerWithSparkleTypes(languageCode, modelPath, paths)
 
+  /*
   def epicTypesPosTagger(
     languageCode: String=TLanguage.ENGLISH.toString,
     modelPath: String = "general-en-pos.xz",
     paths: Seq[String] = "brown-rcv1.clean.tokenized-CoNLL03.txt-c1000-freq1.txt.xz" :: Nil
   ) = new PosTaggerWithEpicTypes(languageCode, modelPath, paths)
+  */
 
 }
 
