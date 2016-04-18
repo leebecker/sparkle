@@ -1,4 +1,4 @@
-package org.sparkle
+package org.sparkle.slate.spark
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Transformer
@@ -6,10 +6,12 @@ import org.apache.spark.ml.param.{Param, ParamMap}
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
-import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Row}
+import org.sparkle.StringSlateExtractor
 import org.sparkle.slate._
+
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
 
