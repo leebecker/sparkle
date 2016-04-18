@@ -1,5 +1,5 @@
 lazy val commonSettings = Seq(
-  name := "sparkle-core",
+  //name := "sparkle-core",
   organization := "com.sparkle",
   version := "0.1-SNAPSHOT",
   scalaVersion := "2.10.6",
@@ -16,7 +16,8 @@ lazy val core = project.
   settings(commonSettings: _*)
 
 lazy val typesystem = project.
-  settings(commonSettings: _*)
+  settings(commonSettings: _*).
+  dependsOn(core)
 
 lazy val clearnlp = project.
   settings(commonSettings: _*)
