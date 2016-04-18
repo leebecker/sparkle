@@ -1,7 +1,6 @@
 package org.sparkle.spark
 
 import org.scalatest._
-import epic.slab.Sentence
 import org.sparkle.slate._
 import org.sparkle.clearnlp._
 import org.sparkle.preprocess.RegexSplitTokenizer

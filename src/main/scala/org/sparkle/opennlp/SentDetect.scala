@@ -1,11 +1,9 @@
 package org.sparkle.opennlp
 
-import java.io.InputStream
-
 import org.sparkle.slate._
-import epic.slab.Sentence
 import opennlp.tools.sentdetect.{SentenceDetectorME, SentenceModel}
-import org.sparkle.typesystem.ops.{EpicSentenceOps, SentenceOps}
+import org.sparkle.typesystem.ops.{SparkleSentenceOps, SentenceOps}
+import org.sparkle.typesystem.basic.Sentence
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._
@@ -74,7 +72,7 @@ abstract class OpenNlpSentenceSegmenterImplBase[SENTENCE_TYPE]( sentenceModelPat
 
 class OpenNlpSentenceSegmenter(sentenceModelPath: String)
   extends OpenNlpSentenceSegmenterImplBase[Sentence](sentenceModelPath) {
-  override val sentenceOps: SentenceOps[Sentence] = EpicSentenceOps
+  override val sentenceOps: SentenceOps[Sentence] = SparkleSentenceOps
 }
 
 object OpenNlpSentenceSegmenter {

@@ -16,8 +16,7 @@
 package org.sparkle.preprocess
 
 import org.sparkle.slate._
-import org.sparkle.typesystem.basic.{Token}
-import epic.slab.Sentence
+import org.sparkle.typesystem.basic.{Sentence,Token}
 
 
 /**

@@ -1,8 +1,7 @@
 package org.sparkle.slate.spark
 
-import epic.slab.Sentence
 import org.sparkle.slate.StringSlate
-import org.sparkle.typesystem.basic.Token
+import org.sparkle.typesystem.basic.{Sentence,Token}
 
 
 

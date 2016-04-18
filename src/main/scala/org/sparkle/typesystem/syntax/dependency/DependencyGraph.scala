@@ -1,8 +1,7 @@
 package org.sparkle.typesystem.syntax.dependency
 
-import epic.slab.Sentence
 import org.sparkle.slate.Span
-import org.sparkle.typesystem.basic.{Token}
+import org.sparkle.typesystem.basic.{Sentence, Token}
 
 import scala.collection.mutable
 import scala.collection.JavaConverters._

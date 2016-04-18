@@ -4,7 +4,8 @@ import java.io.FileInputStream
 
 import breeze.config.CommandLineParser
 import org.sparkle.slate._
-import epic.slab.Sentence
+import org.sparkle.typesystem.basic.Sentence
+
 import scala.reflect._
 
 /**

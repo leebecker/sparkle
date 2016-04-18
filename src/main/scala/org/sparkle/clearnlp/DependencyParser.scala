@@ -5,8 +5,7 @@ import edu.emory.clir.clearnlp.component.utils.{GlobalLexica, NLPUtils}
 import edu.emory.clir.clearnlp.dependency.{DEPFeat, DEPNode, DEPTree}
 import edu.emory.clir.clearnlp.util.lang.TLanguage
 import org.sparkle.slate._
-import epic.slab.Sentence
-import org.sparkle.typesystem.basic.{Token}
+import org.sparkle.typesystem.basic.{Sentence,Token}
 import org.sparkle.typesystem.syntax.dependency._
 
 import scala.collection.JavaConversions._

@@ -1,6 +1,5 @@
-import epic.slab.Sentence
 import org.sparkle.slate.{Slate, Span, StringAnalysisFunction, StringSlate}
-import org.sparkle.typesystem.basic.Token
+import org.sparkle.typesystem.basic.{Sentence,Token}
 
 import scala.reflect._
 
@@ -8,17 +7,6 @@ import scala.reflect._
 val slate = Slate("This is ok. That is better.")
 println(slate.content)
 
-
-/*
-object DumbSentencer extends StringAnalysisFunction {
-
-  def apply(slate: StringSlate) = {
-    val sentenceSpans = Seq(Span(0,10), Span(12, 25))
-    val sentences = Seq(Sentence(), Sentence())
-    slate.addLayer(sentenceSpans.zip(sentences))
-  }
-}
-*/
 
 trait SentenceSegmenter extends StringAnalysisFunction with (String => Iterable[String]) with Serializable {
   override def toString = getClass.getName
@@ -34,7 +22,7 @@ object RegexSentenceSegmenter extends SentenceSegmenter {
 
   def apply(slate: StringSlate) =
   // the [Sentence] is required because of https://issues.scala-lang.org/browse/SI-7647
-    slate.addLayer[Sentence]("[^\\s.!?]+([^.!?]+[.!?]|\\z)".r.findAllMatchIn(slate.content).map(m => Span(m.start, m.end) -> Sentence()))
+    slate.addLayer("[^\\s.!?]+([^.!?]+[.!?]|\\z)".r.findAllMatchIn(slate.content).map(m => Span(m.start, m.end) -> Sentence()))
 }
 
 @SerialVersionUID(1)
@@ -42,6 +30,7 @@ trait Tokenizer extends StringAnalysisFunction with Serializable with (String=>I
   override def toString() = getClass.getName +"()"
 
   def apply(a: String):IndexedSeq[String] = {
+    val x = Slate(a).append(Span(0, a.length), Sentence())
     val slab = apply(Slate(a).append(Span(0, a.length), Sentence()))
     slab.iterator(classTag[Token]).map(_._2.token).toIndexedSeq
   }
@@ -65,7 +54,7 @@ println(analysis.iterator(x).toList);
 
 def covering[PARENT:ClassTag,CHILD:ClassTag](slate: StringSlate, parentType: ClassTag[PARENT], childType: ClassTag[CHILD]) = {
   slate.iterator[PARENT](parentType).map{ case (span, parent) =>
-      slate.covered[CHILD](span, childType).toList
+      slate.covered[CHILD](span).toList
   }
 }
 
@@ -74,6 +63,17 @@ covering(analysis, classTag[Sentence], classTag[Token])
 
 val tokenClass = "org.sparkle.typesystem.basic.Token"
 //println(analysis.iterator(tokenClass).toList);
+import scala.reflect.runtime.universe._
+
+val tp = List[ClassTag[_]](classTag[Token], classTag[Sentence]).head
+println("HERE", tp.runtimeClass.toString)
+val toks1 =analysis.iterator(tp)
+
+
+
+val toks2 = analysis.iterator(classTag[Token])
+
+
 
 
 /*

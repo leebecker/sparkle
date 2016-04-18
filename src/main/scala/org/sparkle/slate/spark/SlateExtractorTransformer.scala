@@ -9,14 +9,13 @@ import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
-import org.sparkle.StringSlateExtractor
 import org.sparkle.slate._
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
 
 
-class SparkleSlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) extends Transformer {
+class SlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) extends Transformer {
   def this() = this(Identifiable.randomUID("sparkler_slate_extractor"))
 
   val slatePipelineFunc: Param[(StringSlate)=>(StringSlate)] = new Param(this, "slatePipelineFunc",
@@ -26,8 +25,6 @@ class SparkleSlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: St
   def getSlatePipelineFunc: (StringSlate)=>(StringSlate) = $(slatePipelineFunc)
 
   def setSlatePipelineFunc(value: (StringSlate)=>(StringSlate)): this.type = set(slatePipelineFunc, value)
-
-  //@transient var pipeline: StringAnalysisFunction = _
 
   val textCol: Param[String] = new Param(this, "textCol", "name of column containing text to be analyzed")
 
@@ -90,8 +87,8 @@ class SparkleSlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: St
   override def transformSchema(schemaIn: StructType): StructType = StructType(schemaIn ++ getExtractorSchemas)
 }
 
-class SparkleSlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag](override val uid: String)
-  extends SparkleSlateExtractorTransformer[T1] {
+class SlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag](override val uid: String)
+  extends SlateExtractorTransformer[T1] {
 
   def this() = this(Identifiable.randomUID("sparkler_slate_extractor2"))
 
@@ -114,8 +111,8 @@ class SparkleSlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag
   }
 }
 
- class SparkleSlateExtractorTransformer3[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag, T3:TypeTag:ClassTag](override val uid: String)
-  extends SparkleSlateExtractorTransformer2[T1,T2] {
+ class SlateExtractorTransformer3[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag, T3:TypeTag:ClassTag](override val uid: String)
+  extends SlateExtractorTransformer2[T1,T2] {
 
   def this() = this(Identifiable.randomUID("sparkler_slate_extractor3"))
 
@@ -139,10 +136,11 @@ class SparkleSlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag
 }
 
 
-
-
-object SparkleSlateExtractorTransformer {
-  def create[T1:TypeTag:ClassTag] = new SparkleSlateExtractorTransformer[T1]()
-  def create[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag] = new SparkleSlateExtractorTransformer2[T1, T2]()
-  def create[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag, T3:TypeTag:ClassTag] = new SparkleSlateExtractorTransformer3[T1, T2, T3]()
+/**
+  * Convenience factories for SlateExtractorTransformer
+  */
+object SlateExtractorTransformer {
+  def apply[T1:TypeTag:ClassTag] = new SlateExtractorTransformer[T1]()
+  def apply[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag] = new SlateExtractorTransformer2[T1, T2]()
+  def apply[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag, T3:TypeTag:ClassTag] = new SlateExtractorTransformer3[T1, T2, T3]()
 }

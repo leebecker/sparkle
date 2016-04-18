@@ -8,10 +8,9 @@ import edu.emory.clir.clearnlp.util.lang.TLanguage
 import org.sparkle.slate.Span
 
 import org.sparkle.slate._
-import epic.slab.Sentence
 import org.apache.commons.io.IOUtils
 import org.sparkle.preprocess.{SparkleTokenizer, SparkleSentenceSegmenterAndTokenizer}
-import org.sparkle.typesystem.basic.Token
+import org.sparkle.typesystem.basic.{Sentence,Token}
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._
