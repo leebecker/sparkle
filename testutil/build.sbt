@@ -6,3 +6,7 @@ lazy val sparkAndDependencies = Seq(
   "org.apache.spark" % "spark-repl_2.10" % "1.6.1"
 )
 libraryDependencies ++= sparkAndDependencies.map(_ % "provided")
+
+
+// Add test dependencies
+libraryDependencies += "org.scalatest" % "scalatest_2.10" % "2.2.5"
