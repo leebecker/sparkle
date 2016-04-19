@@ -140,7 +140,7 @@ class SlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag](overr
   * Convenience factories for SlateExtractorTransformer
   */
 object SlateExtractorTransformer {
-  def apply[T1:TypeTag:ClassTag] = new SlateExtractorTransformer[T1]()
-  def apply[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag] = new SlateExtractorTransformer2[T1, T2]()
-  def apply[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag, T3:TypeTag:ClassTag] = new SlateExtractorTransformer3[T1, T2, T3]()
+  def apply[T1:TypeTag:ClassTag]() = new SlateExtractorTransformer[T1]()
+  def apply[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag]() = new SlateExtractorTransformer2[T1, T2]()
+  def apply[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag, T3:TypeTag:ClassTag]() = new SlateExtractorTransformer3[T1, T2, T3]()
 }
