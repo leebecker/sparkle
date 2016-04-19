@@ -52,6 +52,13 @@ object SparkleBuild extends Build {
     dependsOn(util).
     dependsOn(testutil % "test->compile")
 
+  lazy val nlp4j = Project(id = "sparkle-nlp4j", base = file("nlp4j")).
+    settings(commonSettings).
+    dependsOn(core).
+    dependsOn(typesystem).
+    dependsOn(util).
+    dependsOn(testutil % "test->compile")
+
   lazy val opennlp = Project(id = "sparkle-opennlp", base = file("opennlp")).
     settings(commonSettings).
     dependsOn(core % "test->test;compile->compile").
