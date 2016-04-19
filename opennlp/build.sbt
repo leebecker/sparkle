@@ -1,0 +1,1 @@
+libraryDependencies += "org.apache.opennlp" % "opennlp-tools" % "1.6.0" exclude ("jwnl", "jwnl")
