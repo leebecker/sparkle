@@ -118,7 +118,6 @@ class SentenceSegmenter(languageCode:String=TLanguage.ENGLISH.toString) extends 
 abstract class SentenceSegmenterAndTokenizerImplBase[SENTENCE, TOKEN](
   languageCode: String=TLanguage.ENGLISH.toString)
   extends preprocess.SparkleSentenceSegmenterAndTokenizer[SENTENCE, TOKEN] {
-    //preprocess.SparkleSentenceSegmenterAndTokenizer[SENTENCE, TOKEN] {
 
   val sentenceOps: SentenceOps[SENTENCE]
   val tokenOps: TokenOps[TOKEN]
@@ -172,17 +171,5 @@ class SentenceSegmenterAndTokenizer(languageCode: String=TLanguage.ENGLISH.toStr
   override val sentenceOps: SentenceOps[Sentence] = SparkleSentenceOps
   override val tokenOps: TokenOps[Token] = SparkleTokenOps
 
-}
-
-object SentenceSegmenterAndTokenizer {
-  def apply(languageCode: String=TLanguage.ENGLISH.toString) = new SentenceSegmenterAndTokenizer(languageCode)
-}
-
-
-object ClearNlpTokenization {
-
-  def sentenceSegmenterAndTokenizer(languageCode: String=TLanguage.ENGLISH.toString) = new SentenceSegmenterAndTokenizer(languageCode)
-  def sentenceSegmenter(languageCode:String=TLanguage.ENGLISH.toString) = new SentenceSegmenter(languageCode)
-  def tokenizer(languageCode:String=TLanguage.ENGLISH.toString) = new Tokenizer(languageCode)
 }
 
