@@ -1,6 +1,5 @@
 package org.sparkle.preprocess
 import org.sparkle.slate._
-import org.sparkle.typesystem.basic.{Sentence,Token}
 
 /**
   * Created by leebecker on 2/4/16.
@@ -8,11 +7,12 @@ import org.sparkle.typesystem.basic.{Sentence,Token}
   *
   */
 
-trait SparkleSentenceSegmenterAndTokenizer[Sentence, Token] extends StringAnalysisFunction with Serializable {
+trait SparkleSentenceSegmenterAndTokenizer[SENTENCE, TOKEN] extends StringAnalysisFunction with Serializable {
   override def toString = getClass.getName
 
   def apply(a: String):IndexedSeq[String] = {
     val slate = Slate(a)
-    apply(slate).iterator[Sentence with Token].toIndexedSeq.map(s => slate.spanned(s._1))
+    apply(slate).iterator[SENTENCE with TOKEN].toIndexedSeq.map(s => slate.spanned(s._1))
   }
 }
+

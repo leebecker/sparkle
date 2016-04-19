@@ -1,9 +1,10 @@
-package org.sparkle.preprocess
+package org.sparkle.slate.analyzers
 
 import java.util.regex.Pattern
 
+import org.sparkle.preprocess.SparkleTokenizer
 import org.sparkle.slate._
-import org.sparkle.typesystem.basic.Token
+import org.sparkle.typesystem.basic.{Sentence, Token}
 
 import scala.collection.mutable.ArrayBuffer
 

@@ -6,14 +6,15 @@ import edu.emory.clir.clearnlp.component.utils.NLPUtils
 import edu.emory.clir.clearnlp.tokenization.AbstractTokenizer
 import edu.emory.clir.clearnlp.util.lang.TLanguage
 import org.sparkle.slate.Span
-
 import org.sparkle.slate._
 import org.apache.commons.io.IOUtils
-import org.sparkle.preprocess.{SparkleTokenizer, SparkleSentenceSegmenterAndTokenizer}
-import org.sparkle.typesystem.basic.{Sentence,Token}
+import org.sparkle.preprocess.{SparkleSentenceSegmenterAndTokenizer, SparkleTokenizer}
+import org.sparkle.typesystem.basic.{Sentence, Token}
+import org.sparkle.typesystem.ops.{SentenceOps, SparkleSentenceOps, SparkleTokenOps, TokenOps}
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._
+import org.sparkle.preprocess
 import scala.reflect.ClassTag
 
 /**
@@ -105,7 +106,7 @@ class Tokenizer(languageCode: String=TLanguage.ENGLISH.toString) extends Sparkle
   }
 }
 
-class SentenceSegmenter(languageCode:String=TLanguage.ENGLISH.toString) extends org.sparkle.preprocess.SparkleSentenceSegmenter {
+class SentenceSegmenter(languageCode:String=TLanguage.ENGLISH.toString) extends preprocess.SparkleSentenceSegmenter {
   val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(languageCode))
 
   override def apply(slate: StringSlate): StringSlate = {
@@ -113,27 +114,17 @@ class SentenceSegmenter(languageCode:String=TLanguage.ENGLISH.toString) extends 
   }
 }
 
-object ClearNlpTokenization {
 
-  def sentenceSegmenter(languageCode:String=TLanguage.ENGLISH.toString) = new SentenceSegmenter(languageCode)
-  def tokenizer(languageCode:String=TLanguage.ENGLISH.toString) = new Tokenizer(languageCode)
-}
+abstract class SentenceSegmenterAndTokenizerImplBase[SENTENCE, TOKEN](
+  languageCode: String=TLanguage.ENGLISH.toString)
+  extends preprocess.SparkleSentenceSegmenterAndTokenizer[SENTENCE, TOKEN] {
 
+  val sentenceOps: SentenceOps[SENTENCE]
+  val tokenOps: TokenOps[TOKEN]
 
-
-/**
-  * SparkLE wrapper for ClearNLP Sentence Segmenter + Tokenizer Combo <p>
-  *
-  * Prerequisites: StringSlate object <br>
-  * Outputs: new StringSlate object with Sentence and Token annotations <br>
-  */
-object SentenceSegmenterAndTokenizer extends SparkleSentenceSegmenterAndTokenizer[Sentence, Token] {
-  // FIXME parameterize language code and pre-load tokenizer
-  val defaultLanguageCode = TLanguage.ENGLISH.toString
-  val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(defaultLanguageCode))
+  lazy val tokenizer = NLPUtils.getTokenizer(TLanguage.getType(languageCode))
 
   override def apply(slate: StringSlate): StringSlate =  {
-
     // Convert slate text to an input stream and run with ClearNLP
     val stream: InputStream = IOUtils.toInputStream(slate.content)
     val sentencesAsTokens = tokenizer.segmentize(stream)
@@ -142,12 +133,12 @@ object SentenceSegmenterAndTokenizer extends SparkleSentenceSegmenterAndTokenize
     val sentenceAsTokenSpans = sentencesAsTokens.map(sentenceTokens => {
       var offset = 0
       slate.content.indexOf()
-      val tokens = new ListBuffer[Tuple2[Span, Token]]()
+      val tokens = new ListBuffer[(Span, TOKEN)]()
       for (tokenString:String <- sentenceTokens) {
         val tokenBegin = slate.content.indexOf(tokenString, offset)
         val tokenEnd = tokenBegin + tokenString.length
         if (tokenBegin >= 0 && tokenEnd >= 0) {
-          tokens += Tuple2(Span(tokenBegin, tokenEnd), Token(slate.content.substring(tokenBegin, tokenEnd)))
+          tokens += Tuple2(Span(tokenBegin, tokenEnd), tokenOps.create(slate.content.substring(tokenBegin, tokenEnd)))
         }
         offset = tokenEnd
       }
@@ -156,15 +147,29 @@ object SentenceSegmenterAndTokenizer extends SparkleSentenceSegmenterAndTokenize
 
     // Take the head and tail of each sentence to get the sentence offsets
     val sentenceSpans = sentenceAsTokenSpans.map(sentenceTokenSpans =>
-      Tuple2(Span(sentenceTokenSpans.head._1.begin, sentenceTokenSpans.last._1.end), Sentence()))
+      Tuple2(Span(sentenceTokenSpans.head._1.begin, sentenceTokenSpans.last._1.end), sentenceOps.createSentence()))
+
 
     // Flatten all the tokens into a single list
     val tokenSpans = sentenceAsTokenSpans.flatMap(t=> t)
 
     // Create new Add annotations to a
-    //if(start != slate.content.length)
-    //spans += Span(start, slate.content.length) -> Token(slate.content.substring(start, slate.content.length))
-    var s = slate.addLayer[Sentence](sentenceSpans).addLayer[Token](tokenSpans)
-    s
+    val slateWithSentences = sentenceOps.addSentences(slate, sentenceSpans)
+    tokenOps.addTokens(slateWithSentences, tokenSpans)
   }
 }
+
+/**
+  * SparkLE wrapper for ClearNLP Sentence Segmenter + Tokenizer Combo <p>
+  *
+  * Prerequisites: StringSlate object <br>
+  * Outputs: new StringSlate object with Sentence and Token annotations <br>
+  */
+class SentenceSegmenterAndTokenizer(languageCode: String=TLanguage.ENGLISH.toString)
+  extends SentenceSegmenterAndTokenizerImplBase[Sentence, Token](languageCode) {
+
+  override val sentenceOps: SentenceOps[Sentence] = SparkleSentenceOps
+  override val tokenOps: TokenOps[Token] = SparkleTokenOps
+
+}
+

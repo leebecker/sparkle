@@ -4,6 +4,7 @@ import org.scalatest.FunSuite
 import org.sparkle.slate._
 import org.sparkle.typesystem.basic.{Sentence,Token}
 import org.sparkle.typesystem.syntax.dependency._
+import org.sparkle.clearnlp
 
 class ClearNlpTest extends FunSuite {
 
@@ -30,11 +31,11 @@ class ClearNlpTest extends FunSuite {
   // =========
   test("ClearNLP sentence segmentation and tokenization test") {
 
-    val sentenceSegmenter: StringAnalysisFunction = ClearNlpTokenization.sentenceSegmenter()
-    val tokenizer: StringAnalysisFunction = ClearNlpTokenization.tokenizer()
-    val posTagger: StringAnalysisFunction = PosTagger.sparkleTypesPosTagger()
-    val mpAnalyzer: StringAnalysisFunction = MpAnalyzer
-    val depParser: StringAnalysisFunction = DependencyParser
+    val sentenceSegmenter: StringAnalysisFunction = clearnlp.sentenceSegmenter()
+    val tokenizer: StringAnalysisFunction = clearnlp.tokenizer()
+    val posTagger: StringAnalysisFunction = clearnlp.posTagger()
+    val mpAnalyzer: StringAnalysisFunction = clearnlp.mpAnalyzer()
+    val depParser: StringAnalysisFunction = clearnlp.depParser()
 
     val pipeline = sentenceSegmenter andThen tokenizer andThen posTagger andThen MpAnalyzer andThen DependencyParser
     val slate = pipeline(Slate( """This is sentence one.  Do you like sentence 2?  Mr. and Dr. Takahashi want to leave!  Go now!"""))

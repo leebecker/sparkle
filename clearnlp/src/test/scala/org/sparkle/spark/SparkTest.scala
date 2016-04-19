@@ -3,14 +3,14 @@ package org.sparkle.spark
 import org.scalatest._
 import org.sparkle.slate._
 import org.sparkle.clearnlp._
-import org.sparkle.preprocess.RegexSplitTokenizer
 import org.sparkle.typesystem.basic.Token
-
+import org.sparkle.clearnlp
 import org.apache.spark.{SparkConf, SparkContext}
+import org.sparkle.slate.analyzers.RegexSplitTokenizer
 
 object SparkTestUtils {
-  val sentenceSegmenterAndTokenizer: StringAnalysisFunction = SentenceSegmenterAndTokenizer
-  val posTagger: StringAnalysisFunction = PosTagger.sparkleTypesPosTagger()
+  val sentenceSegmenterAndTokenizer = clearnlp.sentenceSegmenterAndTokenizer()
+  val posTagger: StringAnalysisFunction = clearnlp.posTagger()
   val mpAnalyzer: StringAnalysisFunction = MpAnalyzer
 
   val pipeline = sentenceSegmenterAndTokenizer andThen posTagger andThen mpAnalyzer

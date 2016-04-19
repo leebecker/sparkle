@@ -69,12 +69,12 @@ class PosTaggerWithEpicTypes(languageCode: String, modelPath: String, paths: Seq
 */
 
 
-object PosTagger {
-  def sparkleTypesPosTagger(
-    languageCode: String=TLanguage.ENGLISH.toString,
-    modelPath: String = "general-en-pos.xz",
-    paths: Seq[String] = "brown-rcv1.clean.tokenized-CoNLL03.txt-c1000-freq1.txt.xz" :: Nil
-  ) = new PosTaggerWithSparkleTypes(languageCode, modelPath, paths)
+//object PosTagger {
+//  def sparkleTypesPosTagger(
+//    languageCode: String=TLanguage.ENGLISH.toString,
+//    modelPath: String = "general-en-pos.xz",
+//    paths: Seq[String] = "brown-rcv1.clean.tokenized-CoNLL03.txt-c1000-freq1.txt.xz" :: Nil
+//  ) = new PosTaggerWithSparkleTypes(languageCode, modelPath, paths)
 
   /*
   def epicTypesPosTagger(
@@ -84,5 +84,5 @@ object PosTagger {
   ) = new PosTaggerWithEpicTypes(languageCode, modelPath, paths)
   */
 
-}
+//}
 

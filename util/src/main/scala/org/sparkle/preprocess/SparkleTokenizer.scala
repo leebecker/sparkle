@@ -23,7 +23,6 @@ import org.sparkle.typesystem.basic.{Sentence,Token}
  * Abstract trait for tokenizers, which annotate sentence-segmented text with tokens. Tokenizers work
  * with both raw strings and [[org.sparkle.slate.StringSlate]]s.
  *
- * @author dlwh
  */
 @SerialVersionUID(1)
 trait SparkleTokenizer extends StringAnalysisFunction with Serializable with (String=>IndexedSeq[String]) {
