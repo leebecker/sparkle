@@ -1,7 +1,7 @@
 /*
 lazy val scalaNlpAndDependencies = Seq(
   //"org.scalanlp" % "epic_2.10" % "0.4-SNAPSHOT",
-  "org.scalanlp" % "epic_2.10" % "0.3.1",
+  //"org.scalanlp" % "epic_2.10" % "0.3.1",
   "org.spire-math" % "spire_2.10" % "0.11.0"
 )
 libraryDependencies ++= scalaNlpAndDependencies
@@ -15,7 +15,6 @@ lazy val sparkAndDependencies = Seq(
   "org.apache.spark" % "spark-repl_2.10" % "1.6.1"
 )
 libraryDependencies ++= sparkAndDependencies.map(_ % "provided")
-libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.2"
 
 // Add test dependencies
 libraryDependencies += "org.scalatest" % "scalatest_2.10" % "2.2.5" % Test

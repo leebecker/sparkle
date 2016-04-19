@@ -81,7 +81,7 @@ object OpenNlpSentenceSegmenter {
 
 }
 
-object SentenceSegmenter extends org.sparkle.slate.analyzers.SentenceSegmenter {
+object SentenceSegmenter extends org.sparkle.preprocess.SparkleSentenceSegmenter {
   // FIXME parameterize language code and pre-load tokenizer
   val sentenceModelPath = "/opennlp/models/en-sent.bin"
   val multipleNewlinesRegex = "(?m)\\s*\\n\\s*\\n\\s*".r
