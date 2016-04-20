@@ -69,9 +69,8 @@ class SlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) e
 
   val mapPartitionsOnPipeline: BooleanParam = new BooleanParam(this, "mapPartitionsOnPipeline",
     """
-      Turning this on will run the pipeline function separately on each partition instead of
-      on each element.  This is especially useful when the pipeline has a large initialization
-      cost.  This is turned on by default.
+      |Turning this on will run the pipeline function separately on each partition instead of
+      |on each element.  Useful when pipeline has large initialization cost.
     """.stripMargin)
 
   def getMapPartitionsOnPipeline: Boolean = $(mapPartitionsOnPipeline)
@@ -81,9 +80,9 @@ class SlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) e
 
   val mapPartitionsOnExtractors: BooleanParam = new BooleanParam(this, "mapPartitionsOnExtractors",
     """
-      Turning this on will run the extractor functions separately on each partition instead of
-      on each element.  This is especially useful when extractor have a large initialization
-      cost.  This is turned off by default.
+      |Turning this on will run the extractor functions separately on each partition instead of
+      |on each element.  This is especially useful when extractors have large initialization
+      |cost.
     """.stripMargin)
 
   def getMapPartitionsOnExtractors: Boolean = $(mapPartitionsOnExtractors)
@@ -156,16 +155,17 @@ class SlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag](overr
 
   def this() = this(Identifiable.randomUID("sparkler_slate_extractor2"))
 
-  type ExtractorsType2 = (String, StringSlateExtractor[T2])
+  type ExtractorsType2 = StringSlateExtractor[T2]
 
-  val extractors2: Param[Seq[ExtractorsType2]] = new Param(this, "extractors2",
+  val extractors2: Param[Map[String, ExtractorsType2]] = new Param(this, "extractors2",
     "Map of outputColumns and their StringSlateExtractor function objects")
 
-  def getExtractors2: Seq[ExtractorsType2] = $(extractors2)
+  def getExtractors2: Map[String, ExtractorsType2] = $(extractors2)
 
-  def setExtractors2(value: Seq[ExtractorsType2]): this.type = set("extractors2", value)
+  def setExtractors2(value: Map[String, ExtractorsType2]): this.type = set("extractors2", value)
+  setDefault(extractors2-> Map())
 
-  override def getExtractors = super.getExtractors ++ getExtractors2
+  override def getExtractors = super.getExtractors ++ getExtractors2.toSeq
 
   override def getExtractorSchemas = {
     val dataType2 = ScalaReflection.schemaFor[T2].dataType
@@ -188,14 +188,16 @@ class SlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag](overr
 
   def this() = this(Identifiable.randomUID("sparkler_slate_extractor3"))
 
-  type ExtractorsType3 = (String, StringSlateExtractor[T3])
 
-  val extractors3: Param[Seq[ExtractorsType3]] = new Param(this, "extractors3",
+  type ExtractorsType3 = StringSlateExtractor[T3]
+
+  val extractors3: Param[Map[String, ExtractorsType3]] = new Param(this, "extractors3",
     "Map of outputColumns and their StringSlateExtractor function objects")
 
-  def getExtractors3: Seq[ExtractorsType3] = $(extractors3)
+  def getExtractors3: Map[String, ExtractorsType3] = $(extractors3)
 
-  def setExtractors3(value: Seq[ExtractorsType3]): this.type = set("extractors3", value)
+  def setExtractors3(value: Map[String, ExtractorsType3]): this.type = set("extractors3", value)
+  setDefault(extractors3-> Map())
 
   override def getExtractors = super.getExtractors ++ getExtractors3
 
