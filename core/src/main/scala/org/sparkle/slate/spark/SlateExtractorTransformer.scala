@@ -15,6 +15,14 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
 
 
+object MapPartitionsHelper {
+  def wrapPipelineFunc(rdd: RDD[String], func: (StringSlate) => (StringSlate)) = rdd.mapPartitionsWithIndex((idx, iterator) => {
+    println(s"running on partition idx $idx")
+    iterator.map(Slate(_)).map(func)
+  })
+}
+
+
 /**
   *  A [[org.apache.spark.sql.DataFrame DataFrame]] [[org.apache.spark.ml.Transformer transformer]]
   *  which runs a [[org.sparkle.slate.Slate String Slate]] pipeline function
@@ -22,6 +30,7 @@ import scala.reflect.runtime.universe.TypeTag
   *
   *  This is useful for running NLP pipelines consisting of [[org.sparkle.slate.AnalysisFunction Slate AnalysisFunctions]] to annotate text
   *  and to extract features for training machine learning algorithms or other analyses.
+ *
   * @tparam T1 Type returned by extractors.  The type must be serializable and compatible with Spark DataFrame [[org.apache.spark.sql.types.DataType DataTypes]].  Extracted values
   *            are homogeneous. For heterogeneous extraction use [[org.sparkle.slate.spark.SlateExtractorTransformer2 SlateExtractorTransformer2]] or
   *            [[org.sparkle.slate.spark.SlateExtractorTransformer3 SlateExtractorTransformer3]].
@@ -47,21 +56,23 @@ class SlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) e
 
   def setTextCol(value: String): this.type = set(textCol, value)
 
-  type ExtractorsType1 = (String, StringSlateExtractor[T1])
+  //type ExtractorsType1 = (String, StringSlateExtractor[T1])
+  type ExtractorsType1 = StringSlateExtractor[T1]
 
-  val extractors1: Param[Seq[ExtractorsType1]] = new Param(this, "extractors1",
+  val extractors1: Param[Map[String, ExtractorsType1]] = new Param(this, "extractors1",
     "Map of outputColumns and their StringSlateExtractor function objects")
 
-  def getExtractors1: Seq[ExtractorsType1] = $(extractors1)
+  def getExtractors1: Map[String, ExtractorsType1] = $(extractors1)
 
-  def setExtractors1(value: Seq[ExtractorsType1]): this.type = set("extractors1", value)
+  def setExtractors1(value: Map[String, ExtractorsType1]): this.type = set("extractors1", value)
+  setDefault(extractors1 -> Map())
 
   val mapPartitionsOnPipeline: BooleanParam = new BooleanParam(this, "mapPartitionsOnPipeline",
     """
       Turning this on will run the pipeline function separately on each partition instead of
       on each element.  This is especially useful when the pipeline has a large initialization
       cost.  This is turned on by default.
-    """.stripMargin)(true)
+    """.stripMargin)
 
   def getMapPartitionsOnPipeline: Boolean = $(mapPartitionsOnPipeline)
 
@@ -78,7 +89,7 @@ class SlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) e
   def getMapPartitionsOnExtractors: Boolean = $(mapPartitionsOnExtractors)
 
   def setMapPartitionsOnExtractors(value: Boolean): this.type = set("mapPartitionsOnExtractors", value)
-  setDefault(mapPartitionsOnPipeline -> false)
+  setDefault(mapPartitionsOnExtractors -> false)
 
   def makeZip(s: Seq[RDD[_]]): RDD[Seq[_]] = {
     if (s.length == 1)
@@ -102,28 +113,20 @@ class SlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) e
     dataset.sqlContext.createDataFrame(datasetWithExtractor1Rdd, transformSchema(dataset.schema))
   }
 
-  def getExtractors: Seq[(String, StringSlateExtractor[_])] = getExtractors1
+  def getExtractors: Seq[(String, StringSlateExtractor[_])] = getExtractors1.toSeq
   def getExtractorSchemas: Seq[StructField] = {
     val dataType1 = ScalaReflection.schemaFor[T1].dataType
-    for ((extractorName, extractor) <- $(extractors1))
+    for ((extractorName, extractor) <- getExtractors1.toSeq)
       yield StructField(extractorName, dataType1)
   }
 
 
   def extractFromText(textRdd: RDD[String]): RDD[Seq[_]] = {
-    /*
-    val slateInRdd = textRdd.map(Slate(_))
-    // Run the pipeline
-    val slateOutRdd = slateInRdd.map(getSlatePipelineFunc)
-    */
 
     val slateOutRdd = if (getMapPartitionsOnPipeline) {
-      textRdd.mapPartitionsWithIndex((idx, iterator) => {
-        println(s"Running pipeline on partition $idx")
-        iterator.map(text => getSlatePipelineFunc(Slate(text)))
-      })
+      MapPartitionsHelper.wrapPipelineFunc(textRdd, getSlatePipelineFunc)
     } else {
-      textRdd.map(text=>getSlatePipelineFunc(Slate(text)))
+      textRdd.map(Slate(_)).map(getSlatePipelineFunc)
     }
 
     // Run each of the extractors
