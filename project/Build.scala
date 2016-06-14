@@ -32,8 +32,8 @@ object SparkleBuild extends Build {
   )
 
   lazy val root = Project(id = "sparkle", base = file(".")).
-    aggregate(core, typesystem, util, clearnlp).
-    dependsOn(core, typesystem, util, clearnlp).
+    aggregate(core, typesystem, util, clearnlp, nlp4j).
+    dependsOn(core, typesystem, util, clearnlp, nlp4j).
     settings(
       libraryDependencies ++= sparkAndDependencies2.map(_ % "provided"),
       initialCommands in console := """

@@ -57,7 +57,7 @@ abstract class SentenceSegmenterAndTokenizerImplBase[SENTENCE, TOKEN](
     val sentencesAsNlpNodes = tokenizer.segmentize(text)
 
     val tokens = new ListBuffer[(Span, TOKEN)]
-    val spansAndSentences = sentencesAsNlpNodes.tail.map(
+    val spansAndSentences = sentencesAsNlpNodes.map(
       nlp4jSentence => {
         val span = Span(nlp4jSentence(0).getStartOffset, nlp4jSentence(nlp4jSentence.length - 1).getEndOffset)
         val sentence = sentenceOps.createSentence()
@@ -65,7 +65,7 @@ abstract class SentenceSegmenterAndTokenizerImplBase[SENTENCE, TOKEN](
       }
     )
 
-    val spansAndTokens =  sentencesAsNlpNodes.tail.map(_.map(node => {
+    val spansAndTokens =  sentencesAsNlpNodes.map(_.map(node => {
         val span = Span(node.getStartOffset, node.getEndOffset)
         val token = tokenOps.create(node.getWordForm)
         (span, token)
