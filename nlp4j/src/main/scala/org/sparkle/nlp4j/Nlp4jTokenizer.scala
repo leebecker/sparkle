@@ -9,7 +9,6 @@ import org.sparkle.typesystem.ops.{SentenceOps, SparkleSentenceOps, SparkleToken
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._
-import scala.util.Try
 
 
 
