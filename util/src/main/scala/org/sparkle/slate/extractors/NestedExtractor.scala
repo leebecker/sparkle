@@ -26,7 +26,7 @@ object NestedExtractor extends StringSlateExtractor[ResultSchema] with Serializa
         val (spansAndTokens) = slate.covered[Token](sentenceSpan)
 
         val tokens = spansAndTokens.map {
-          case (tokenSpan, token) => TokenSchema(token.token, token.pos.getOrElse(null), tokenSpan.begin, tokenSpan.end)
+          case (tokenSpan, token) => TokenSchema(token.token, token.pos.orNull, tokenSpan.begin, tokenSpan.end)
         }
         SentenceSchema(sentenceSpan.begin, sentenceSpan.end, tokens)
       }

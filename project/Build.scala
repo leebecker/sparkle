@@ -9,7 +9,7 @@ object SparkleBuild extends Build {
   lazy val commonSettings = Seq(
     organization := "com.sparkle",
     version := "0.1-SNAPSHOT",
-    scalaVersion := "2.10.5",
+    scalaVersion := "2.10.6",
     //ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) },
     // Require Java 1.8
     initialize := {
@@ -23,9 +23,26 @@ object SparkleBuild extends Build {
   // dependsOn: a project depends on code in another project.
   // without dependsOn, you'll get a compiler error: "object bar is not a member of package
   // com.alvinalexander".
+  lazy val sparkAndDependencies2 = Seq(
+    "org.apache.spark" % "spark-core_2.10" % "1.6.1",
+    "org.apache.spark" % "spark-sql_2.10" % "1.6.1",
+    "org.apache.spark" % "spark-hive_2.10" % "1.6.1",
+    "org.apache.spark" % "spark-mllib_2.10" % "1.6.1",
+    "org.apache.spark" % "spark-repl_2.10" % "1.6.1"
+  )
+
   lazy val root = Project(id = "sparkle", base = file(".")).
     aggregate(core, typesystem, util, clearnlp).
-    dependsOn(core, typesystem, util, clearnlp)
+    dependsOn(core, typesystem, util, clearnlp).
+    settings(
+      libraryDependencies ++= sparkAndDependencies2.map(_ % "provided"),
+      initialCommands in console := """
+        val sc = new org.apache.spark.SparkContext("local", "shell")
+        val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
+        import sqlContext.implicits._
+        import org.apache.spark.sql.functions._
+      """
+    )
 
   lazy val testutil = Project(id ="sparkle-test-util", base = file("testutil"))
 
@@ -67,8 +84,7 @@ object SparkleBuild extends Build {
 
   lazy val shell = Project(id = "sparkle-shell", base = file("shell")).
     settings(commonSettings).
-    aggregate(core, typesystem, util, clearnlp).
-    dependsOn(core, typesystem, util, clearnlp).
+    dependsOn(root).
     settings(
       initialCommands in console := """
         val sc = new org.apache.spark.SparkContext("local", "shell")
@@ -86,6 +102,7 @@ object SparkleBuild extends Build {
     //"org.scala-lang.modules" % "scala-xml_2.11" % "1.0.4"
   )
 
+  /*
   libraryDependencies += "jline" % "jline" % "2.10.5"
 
   lazy val sparkAndDependencies2 = Seq(
@@ -106,5 +123,6 @@ object SparkleBuild extends Build {
 
   // Assembly gets provided as well
   run in Compile <<= Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run))
+  */
 
 }
