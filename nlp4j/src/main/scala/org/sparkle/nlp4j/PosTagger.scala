@@ -11,6 +11,9 @@ import org.sparkle.typesystem.ops._
 
 /**
   * Created by leebecker on 6/14/16.
+  *
+  * Base class for NLP4J pos tagger wrapper.  Override the ops to support different typesystems.
+  *
   */
 abstract class PosTaggerImplBase[SENTENCE, TOKEN, POSTAG](language: Language, modelPath: String)
     extends StringAnalysisFunction with Serializable {
@@ -21,9 +24,7 @@ abstract class PosTaggerImplBase[SENTENCE, TOKEN, POSTAG](language: Language, mo
   val tokenOps: TokenOps[TOKEN]
   val posTagOps: PartOfSpeechOps[TOKEN, POSTAG]
 
-  lazy val modelFile = "/edu/emory/mathcs/nlp/models/en-pos.xz"
-  // Init POS tag relevant Global Lexica
-  // Lazy loading will prevent us from repeat loads
+  // Init POS tag relevant Global Lexica - Lazy loading will prevent us from repeated initialization
   Nlp4jUtils.initAmbiguityClasses()
   Nlp4jUtils.initWordClusters()
   lazy val tagger = NLPUtils.getComponent(getClass.getResourceAsStream(modelPath)).asInstanceOf[OnlineComponent[NLPNode, POSState[NLPNode]]]
@@ -32,7 +33,7 @@ abstract class PosTaggerImplBase[SENTENCE, TOKEN, POSTAG](language: Language, mo
     val sentences = sentenceOps.selectAllSentences(slate)
 
     val posTaggedTokenSpans = sentences.flatMap {
-      case (sentenceSpan, sentence) => {
+      case (sentenceSpan, sentence) =>
         val tokens = tokenOps.selectTokens(slate, sentenceSpan).toIndexedSeq
         val tokenStrings = tokens.map { case (tokenSpan, _) => slate.spanned(tokenSpan) }
         val rootNode = new NLPNode()
@@ -50,21 +51,21 @@ abstract class PosTaggerImplBase[SENTENCE, TOKEN, POSTAG](language: Language, mo
         (tokens zip tokenNodes).map {
           case ((span, token), node) => (span, posTagOps.createPosTag(node.getPartOfSpeechTag, token))
         }
-      }
     }
     // Strangely this needs to be split into two lines or else
     // we get a compiler error
-    val resultSlate = posTagOps.addPosTags(slate, posTaggedTokenSpans)
-    resultSlate
+    //  val resultSlate = posTagOps.addPosTags(slate, posTaggedTokenSpans)
+    //resultSlate
+    posTagOps.addPosTags(slate, posTaggedTokenSpans)
 
   }
 }
 
-  class PosTaggerWithSparkleTypes(language: Language, modelPath: String)
+class PosTaggerWithSparkleTypes(language: Language, modelPath: String)
     extends PosTaggerImplBase[Sentence, Token, Token](language, modelPath) {
 
     override val sentenceOps: SentenceOps[Sentence] = SparkleSentenceOps
     override val tokenOps: TokenOps[Token] = SparkleTokenOps
     override val posTagOps: PartOfSpeechOps[Token, Token] = SparklePartOfSpeechOps
-  }
+}
 

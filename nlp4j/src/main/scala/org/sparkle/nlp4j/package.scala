@@ -4,7 +4,7 @@ import org.sparkle.nlp4j.Nlp4jTokenizerWithSparkleTypes
 import edu.emory.mathcs.nlp.common.util.Language
 
 /**
-  * Created by leebecker on 4/19/16.
+  * Package methods for quick creation of NLP4J wrappers
   */
 package object nlp4j {
   def tokenizer(language: Language = Language.ENGLISH) = new Nlp4jTokenizerWithSparkleTypes(language)
@@ -13,5 +13,4 @@ package object nlp4j {
 
   def posTagger(language: Language=Language.ENGLISH, modelPath: String="/edu/emory/mathcs/nlp/models/en-pos.xz") =
     new PosTaggerWithSparkleTypes(language, modelPath)
-
 }
