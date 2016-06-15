@@ -11,6 +11,8 @@ trait TokenOps[TOKEN_TYPE] {
 
   def selectTokens[In <: TOKEN_TYPE](slate: StringSlate, coveringSpan: Span): TraversableOnce[(Span, TOKEN_TYPE)]
 
+  def getText[In <: TOKEN_TYPE](slate: StringSlate, tokenSpan: Span, token: TOKEN_TYPE): String
+
   def selectAllTokens[In <: TOKEN_TYPE](slate: StringSlate): TraversableOnce[(Span, TOKEN_TYPE)]
 
   def addTokens(slate: StringSlate, tokens: TraversableOnce[(Span, TOKEN_TYPE)]): StringSlate

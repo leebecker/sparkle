@@ -14,6 +14,9 @@ object SparkleTokenOps extends TokenOps[Token]{
   override def selectTokens[In <: Token](slate: StringSlate, coveringSpan: Span): TraversableOnce[(Span, Token)] =
     slate.covered[Token](coveringSpan)
 
-  override def addTokens(slate: StringSlate, tokens: TraversableOnce[(Span, Token)]):
-      StringSlate = slate.addLayer[Token](tokens)
+  override def addTokens(slate: StringSlate, tokens: TraversableOnce[(Span, Token)]): StringSlate =
+    slate.addLayer[Token](tokens)
+
+  override def getText[In <: Token](slate: StringSlate, tokenSpan: Span, token: Token): String =
+    slate.spanned(tokenSpan)
 }

@@ -15,7 +15,7 @@ import org.sparkle.typesystem.ops._
   * Base class for NLP4J pos tagger wrapper.  Override the ops to support different typesystems.
   *
   */
-abstract class PosTaggerImplBase[SENTENCE, TOKEN, POSTAG](language: Language, modelPath: String)
+abstract class Nlp4jPosTaggerImplBase[SENTENCE, TOKEN, POSTAG](language: Language, modelPath: String)
     extends StringAnalysisFunction with Serializable {
 
   require(language == Language.ENGLISH, s"Language $language unsupported in Sparkle NLP4j POS Tagger Wrapper.")
@@ -35,7 +35,8 @@ abstract class PosTaggerImplBase[SENTENCE, TOKEN, POSTAG](language: Language, mo
     val posTaggedTokenSpans = sentences.flatMap {
       case (sentenceSpan, sentence) =>
         val tokens = tokenOps.selectTokens(slate, sentenceSpan).toIndexedSeq
-        val tokenStrings = tokens.map { case (tokenSpan, _) => slate.spanned(tokenSpan) }
+        val tokenStrings = tokens.map(t => tokenOps.getText(slate, t._1, t._2))
+          tokens.map { case (tokenSpan, _) => slate.spanned(tokenSpan) }
         val rootNode = new NLPNode()
         rootNode.toRoot()
 
@@ -44,6 +45,8 @@ abstract class PosTaggerImplBase[SENTENCE, TOKEN, POSTAG](language: Language, mo
           case ((tokenSpan, tokenText), tokenIdx) => new NLPNode(tokenIdx, tokenText)
         }
         val sentenceNodes = Array(rootNode) ++ tokenNodes
+        Nlp4jUtils.lexica.process(sentenceNodes)
+
         // Run nlp4j POS tagger
         tagger.process(sentenceNodes)
 
@@ -61,8 +64,8 @@ abstract class PosTaggerImplBase[SENTENCE, TOKEN, POSTAG](language: Language, mo
   }
 }
 
-class PosTaggerWithSparkleTypes(language: Language, modelPath: String)
-    extends PosTaggerImplBase[Sentence, Token, Token](language, modelPath) {
+class Nlp4jPosTaggerWithSparkleTypes(language: Language, modelPath: String)
+    extends Nlp4jPosTaggerImplBase[Sentence, Token, Token](language, modelPath) {
 
     override val sentenceOps: SentenceOps[Sentence] = SparkleSentenceOps
     override val tokenOps: TokenOps[Token] = SparkleTokenOps

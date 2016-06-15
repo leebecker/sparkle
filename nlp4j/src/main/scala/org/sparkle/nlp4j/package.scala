@@ -11,6 +11,8 @@ package object nlp4j {
 
   def sentenceSegmenterAndTokenizer(language: Language=Language.ENGLISH) = new Nlp4jSentenceSegmenterAndTokenizerWithSparkleTypes(language)
 
+  def lemmatizer(language: Language=Language.ENGLISH) = new Nlp4jLemmatizerWithSparkleTypes(language)
+
   def posTagger(language: Language=Language.ENGLISH, modelPath: String="/edu/emory/mathcs/nlp/models/en-pos.xz") =
     new Nlp4jPosTaggerWithSparkleTypes(language, modelPath)
 }

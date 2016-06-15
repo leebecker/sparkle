@@ -6,10 +6,9 @@ import javax.xml.parsers.DocumentBuilderFactory
 import edu.emory.mathcs.nlp.common.collection.tree.PrefixTree
 import edu.emory.mathcs.nlp.common.collection.tuple.Pair
 import edu.emory.mathcs.nlp.component.template.feature.Field
-import edu.emory.mathcs.nlp.common.util.IOUtils;
+import edu.emory.mathcs.nlp.common.util.IOUtils
+import edu.emory.mathcs.nlp.component.template.node.NLPNode
 import edu.emory.mathcs.nlp.component.template.util.GlobalLexica
-import org.w3c.dom.Document
-import org.w3c.dom.Element
 
 import collection.JavaConverters._
 
@@ -23,7 +22,7 @@ object Nlp4jUtils {
   val builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
   val xmlDoc = builder.newDocument()
   val root = xmlDoc.createElement("dummy")
-  lazy val lexica = new GlobalLexica(root)
+  lazy val lexica = new GlobalLexica[NLPNode](root)
   // Needed for POS Tagging
   lazy val ambiguityClasses = initAmbiguityClasses()
   // Needed for POS Tagging and Dependency Parsing
