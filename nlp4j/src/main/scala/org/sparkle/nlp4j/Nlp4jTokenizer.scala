@@ -12,7 +12,7 @@ import scala.collection.JavaConversions._
 
 
 
-abstract class TokenizerImplBase[TOKEN](language: Language = Language.ENGLISH)
+abstract class Nlp4jTokenizerImplBase[TOKEN](language: Language = Language.ENGLISH)
     extends StringAnalysisFunction with Serializable {
 
   require(language == Language.ENGLISH, s"Language $language unsupported in Sparkle NLP4j Tokenizer Wrapper.")
@@ -39,7 +39,7 @@ abstract class TokenizerImplBase[TOKEN](language: Language = Language.ENGLISH)
 
 
 
-abstract class SentenceSegmenterAndTokenizerImplBase[SENTENCE, TOKEN](
+abstract class Nlp4jSentenceSegmenterAndTokenizerImplBase[SENTENCE, TOKEN](
   language: Language = Language.ENGLISH)
   extends preprocess.SparkleSentenceSegmenterAndTokenizer[SENTENCE, TOKEN] {
 
@@ -79,7 +79,7 @@ abstract class SentenceSegmenterAndTokenizerImplBase[SENTENCE, TOKEN](
 
 
 
-class Nlp4jTokenizerWithSparkleTypes(language: Language=Language.ENGLISH) extends TokenizerImplBase[Token](language) {
+class Nlp4jTokenizerWithSparkleTypes(language: Language=Language.ENGLISH) extends Nlp4jTokenizerImplBase[Token](language) {
   override val tokenOps: TokenOps[Token] = SparkleTokenOps
 }
 
@@ -90,7 +90,7 @@ class Nlp4jTokenizerWithSparkleTypes(language: Language=Language.ENGLISH) extend
   * Outputs: new StringSlate object with Sentence and Token annotations <br>
   */
 class Nlp4jSentenceSegmenterAndTokenizerWithSparkleTypes(language: Language=Language.ENGLISH)
-  extends SentenceSegmenterAndTokenizerImplBase[Sentence, Token](language) {
+  extends Nlp4jSentenceSegmenterAndTokenizerImplBase[Sentence, Token](language) {
 
   override val sentenceOps: SentenceOps[Sentence] = SparkleSentenceOps
   override val tokenOps: TokenOps[Token] = SparkleTokenOps
