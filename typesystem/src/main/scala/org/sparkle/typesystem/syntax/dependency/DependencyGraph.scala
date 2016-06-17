@@ -45,15 +45,6 @@ object DependencyUtils {
   }
 
 
-  def filterToLeafNodes(nodes: TraversableOnce[DependencyNode]) = {
-    nodes.flatten{
-      case (node: RootDependencyNode) => None
-      case (node) => Some(node)
-    }
-
-
-  }
-
   def extractToken(node: DependencyNode) = {
     node match {
       case tokenNode: RootDependencyNode => "ROOT"

@@ -12,7 +12,11 @@ import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._
 
 
-
+/**
+  * Base wrapper for NLP4J tokenization functionality.
+  * @param language
+  * @tparam TOKEN
+  */
 abstract class Nlp4jTokenizerImplBase[TOKEN](language: Language = Language.ENGLISH)
     extends StringAnalysisFunction with Serializable {
 

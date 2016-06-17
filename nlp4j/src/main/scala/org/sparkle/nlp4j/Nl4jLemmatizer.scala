@@ -9,7 +9,13 @@ import org.sparkle.typesystem.ops.sparkle.{SparkleLemmaOps, SparklePartOfSpeechO
 
 
 /**
-  * Created by leebecker on 6/15/16.
+  * Base class for wrapping NLP4J's Morphological analyzer.  Extend this by overriding  the *Ops fields with
+  * concrete implementations for a particular typesystem
+  *
+  * @param language language code for defining models
+  * @tparam TOKEN type of annotation containing token information
+  * @tparam POSTAG type of annotation containing POS information
+  * @tparam LEMMA type of annotation containing lemma information
   */
 abstract class Nlp4jLemmatizerImplBase[TOKEN, POSTAG, LEMMA](language: Language) extends StringAnalysisFunction with Serializable {
   require(language == Language.ENGLISH, s"Language $language unsupported in Sparkle NLP4j Morphological Analyzer Wrapper.")
@@ -17,22 +23,26 @@ abstract class Nlp4jLemmatizerImplBase[TOKEN, POSTAG, LEMMA](language: Language)
   val tokenOps: TokenOps[TOKEN]
   val posTagOps: PartOfSpeechOps[TOKEN, POSTAG]
   val lemmaOps: LemmaOps[TOKEN, LEMMA]
-  val lemmatizer = new EnglishMorphAnalyzer()
+
+  // initialize NLP4J morpho-analyzer
+  // FIXME: Define way to get different models
+  lazy val lemmatizer = new EnglishMorphAnalyzer()
 
   override def apply(slate: StringSlate): StringSlate = {
+    // FIXME: define Window parameter to only select tokens within bounds of certain annotation types
+    // Common use cases include Sentence, Paragraph, Document
     val tokens = tokenOps.selectAllTokens(slate).toIndexedSeq
     val tokenStrings = tokens.map{case(tokenSpan, token) => tokenOps.getText(slate, tokenSpan, token)}
 
+    // Extract token and POS information
     val lemmas = tokens.map {
-      case (tokenSpan, token) => {
+      case (tokenSpan, token) =>
         val text = tokenOps.getText(slate, tokenSpan, token)
         val pos = posTagOps.getPos(slate, tokenSpan)
         val posTag = posTagOps.getPosTag(slate, tokenSpan, pos).orNull
         val lemma = lemmatizer.lemmatize(text, posTag)
 
         (tokenSpan, lemmaOps.createLemma(lemma, token))
-      }
-
     }
 
     val result = lemmaOps.addLemmas(slate, lemmas)
@@ -41,6 +51,10 @@ abstract class Nlp4jLemmatizerImplBase[TOKEN, POSTAG, LEMMA](language: Language)
 
 }
 
+/**
+  * Define Lemmatizer for Sparkle TypeSystem
+  * @param language language code for defining models
+  */
 class Nlp4jLemmatizerWithSparkleTypes(language: Language)
   extends Nlp4jLemmatizerImplBase[Token, Token, Token](language) {
 

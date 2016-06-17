@@ -11,10 +11,14 @@ import org.sparkle.typesystem.ops._
 import org.sparkle.typesystem.ops.sparkle.{SparklePartOfSpeechOps, SparkleSentenceOps, SparkleTokenOps}
 
 /**
-  * Created by leebecker on 6/14/16.
   *
   * Base class for NLP4J pos tagger wrapper.  Override the ops to support different typesystems.
   *
+  * @param language language code.  Currently only English is supported
+  * @param modelPath path to model file
+  * @tparam SENTENCE annotation type containing sentence information
+  * @tparam TOKEN annotation type containing token information
+  * @tparam POSTAG annotation type containing POS tag information
   */
 abstract class Nlp4jPosTaggerImplBase[SENTENCE, TOKEN, POSTAG](language: Language, modelPath: String)
     extends StringAnalysisFunction with Serializable {
@@ -56,15 +60,16 @@ abstract class Nlp4jPosTaggerImplBase[SENTENCE, TOKEN, POSTAG](language: Languag
           case ((span, token), node) => (span, posTagOps.createPosTag(node.getPartOfSpeechTag, token))
         }
     }
-    // Strangely this needs to be split into two lines or else
-    // we get a compiler error
-    //  val resultSlate = posTagOps.addPosTags(slate, posTaggedTokenSpans)
-    //resultSlate
-    posTagOps.addPosTags(slate, posTaggedTokenSpans)
 
+    posTagOps.addPosTags(slate, posTaggedTokenSpans)
   }
 }
 
+/**
+  * Define POS tagger for Sparkle TypeSystem
+  * @param language language code for defining models
+  * @param modelPath path to model file
+  */
 class Nlp4jPosTaggerWithSparkleTypes(language: Language, modelPath: String)
     extends Nlp4jPosTaggerImplBase[Sentence, Token, Token](language, modelPath) {
 

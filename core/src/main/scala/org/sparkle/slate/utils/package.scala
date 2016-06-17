@@ -12,5 +12,10 @@ package object utils {
       case (span: Span, annotation: SUB_A) => Some(span, annotation)
       case otherwise => None
     }
+
+    def filterByNotType[SUB_A: ClassTag] = annotations.flatMap {
+      case (span: Span, annotation: SUB_A) => None
+      case otherwise => Some(otherwise)
+    }
   }
 }

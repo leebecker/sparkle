@@ -12,7 +12,18 @@ import org.sparkle.typesystem.ops.sparkle._
 import org.sparkle.typesystem.syntax.dependency.{DependencyNode, DependencyRelation, LeafDependencyNode, RootDependencyNode}
 
 /**
-  * Created by leebecker on 6/15/16.
+  * Base class for wrapping NLP4J dependency parser
+  *
+  * @param language language code.  Currently only English is supported
+  * @param modelPath path to parser model file
+  * @tparam SENTENCE annotation type containing sentence info
+  * @tparam TOKEN annotation type containing token info
+  * @tparam POSTAG annotation type containing POS tag info
+  * @tparam LEMMA annotation type containing lemma info
+  * @tparam NODE
+  * @tparam TOKEN_NODE
+  * @tparam ROOT_NODE
+  * @tparam RELATION
   */
 abstract class Nlp4jDependencyParserImplBase[SENTENCE, TOKEN, POSTAG, LEMMA, NODE, TOKEN_NODE<:NODE, ROOT_NODE <: NODE, RELATION](language: Language, modelPath: String)
   extends StringAnalysisFunction with Serializable {
@@ -27,48 +38,51 @@ abstract class Nlp4jDependencyParserImplBase[SENTENCE, TOKEN, POSTAG, LEMMA, NOD
   Nlp4jUtils.initWordClusters()
   lazy val parser = NLPUtils.getComponent(getClass.getResourceAsStream(modelPath)).asInstanceOf[OnlineComponent[NLPNode, DEPState[NLPNode]]]
 
+
+  def processSentence(slate: StringSlate, sentenceSpan: Span, sentence: SENTENCE) = {
+      val tokens = tokenOps.selectTokens(slate, sentenceSpan).toIndexedSeq
+      val tokenStrings = tokens.map(t => tokenOps.getText(slate, t._1, t._2))
+      val posTags = posTagOps.selectPosTags(slate, sentenceSpan).toIndexedSeq
+      val posTagStrings = posTags.map(p => posTagOps.getPosTag(slate, p._1, p._2).orNull)
+
+      val rootNode = new NLPNode()
+      rootNode.toRoot()
+      rootNode.setStartOffset(sentenceSpan.begin)
+      rootNode.setEndOffset(sentenceSpan.end)
+
+
+      // Dress up NLPNodes with token info for processing by tagger
+      val tokenNodes = tokens.zipWithIndex.map {
+        case ((tokenSpan, token), tokenIdx) =>
+          val pos = posTagOps.getPos(slate, tokenSpan)
+          val posTag = posTagOps.getPosTag(slate, tokenSpan, pos).orNull
+          val lemma = lemmaOps.getLemma(slate, tokenSpan)
+          val lemmaLabel = lemmaOps.getLemmaText(slate, tokenSpan, lemma).orNull
+          val tokenText = tokenOps.getText(slate, tokenSpan, token)
+          val node = new NLPNode(tokenIdx+1, tokenText, posTag)
+          node.setLemma(lemmaLabel)
+          node.setStartOffset(tokenSpan.begin)
+          node.setEndOffset(tokenSpan.end)
+          node
+      }
+      val nodes = Array(rootNode) ++ tokenNodes
+      Nlp4jUtils.lexica.process(nodes)
+
+      parser.process(nodes)
+
+      // now pull out the nodes and build a dependency graph
+      val (depNodes, depRels) = convertToDependencyGraph(tokens.map(_._2), nodes)
+      val slateWithNodes = dependencyOps.addNodes(slate, depNodes)
+      val slateWithRelations = dependencyOps.addRelations(slateWithNodes, depRels)
+      slateWithRelations
+  }
+
+
   override def apply(slate: StringSlate): StringSlate = {
 
     val sentences = sentenceOps.selectAllSentences(slate)
-    var slateOut = slate
-
-    sentences.foreach {
-      case (sentenceSpan, sentence) =>
-        val tokens = tokenOps.selectTokens(slate, sentenceSpan).toIndexedSeq
-        val tokenStrings = tokens.map(t => tokenOps.getText(slate, t._1, t._2))
-        val posTags = posTagOps.selectPosTags(slate, sentenceSpan).toIndexedSeq
-        val posTagStrings = posTags.map(p => posTagOps.getPosTag(slate, p._1, p._2).orNull)
-
-        val rootNode = new NLPNode()
-        rootNode.toRoot()
-        rootNode.setStartOffset(sentenceSpan.begin)
-        rootNode.setEndOffset(sentenceSpan.end)
-
-
-        // Dress up NLPNodes with token info for processing by tagger
-        val tokenNodes = tokens.zipWithIndex.map {
-          case ((tokenSpan, token), tokenIdx) =>
-            val pos = posTagOps.getPos(slate, tokenSpan)
-            val posTag = posTagOps.getPosTag(slate, tokenSpan, pos).orNull
-            val lemma = lemmaOps.getLemma(slate, tokenSpan)
-            val lemmaLabel = lemmaOps.getLemmaText(slate, tokenSpan, lemma).orNull
-            val tokenText = tokenOps.getText(slate, tokenSpan, token)
-            val node = new NLPNode(tokenIdx+1, tokenText, posTag)
-            node.setLemma(lemmaLabel)
-            node.setStartOffset(tokenSpan.begin)
-            node.setEndOffset(tokenSpan.end)
-            node
-        }
-        val nodes = Array(rootNode) ++ tokenNodes
-        Nlp4jUtils.lexica.process(nodes)
-
-        parser.process(nodes)
-
-        // now pull out the nodes and build a dependency graph
-        val (depNodes, depRels) = convertToDependencyGraph(tokens.map(_._2), nodes)
-        slateOut = dependencyOps.addNodes(slateOut, depNodes)
-        slateOut = dependencyOps.addRelations(slateOut, depRels)
-    }
+    val slateOut = sentences.foldLeft[StringSlate](slate)(
+      (slate, sentenceSpan) => processSentence(slate, sentenceSpan._1, sentenceSpan._2))
     slateOut
   }
 
