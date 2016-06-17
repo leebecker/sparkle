@@ -2,8 +2,9 @@ package org.sparkle.opennlp
 
 import org.sparkle.slate._
 import opennlp.tools.sentdetect.{SentenceDetectorME, SentenceModel}
-import org.sparkle.typesystem.ops.{SparkleSentenceOps, SentenceOps}
+import org.sparkle.typesystem.ops.SentenceOps
 import org.sparkle.typesystem.basic.Sentence
+import org.sparkle.typesystem.ops.sparkle.SparkleSentenceOps
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._

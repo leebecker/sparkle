@@ -55,6 +55,7 @@ class SlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) e
   def getTextCol: String = $(textCol)
 
   def setTextCol(value: String): this.type = set(textCol, value)
+  setDefault(textCol, "text")
 
   //type ExtractorsType1 = (String, StringSlateExtractor[T1])
   type ExtractorsType1 = StringSlateExtractor[T1]

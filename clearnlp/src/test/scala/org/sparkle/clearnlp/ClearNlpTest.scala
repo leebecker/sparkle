@@ -79,10 +79,7 @@ class ClearNlpTest extends FunSuite {
     )
 
     val depNodesInSentence0 = slate.covered[DependencyNode](sentences.head._1)
-    val triplesInSentence0 = depNodesInSentence0.flatMap(x => x match {
-      case (s: Span, d: RootDependencyNode) => None
-      case (s: Span, d: TokenDependencyNode) => Some(DependencyUtils.extractTriple(d))
-    })
+    val triplesInSentence0 = depNodesInSentence0.flatMap(nodeSpan => DependencyUtils.extractTriple(nodeSpan._2))
 
     // Note difference ordering from above.
     assert(triplesInSentence0 === List(

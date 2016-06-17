@@ -8,48 +8,46 @@ import scala.collection.JavaConverters._
 import collection.JavaConversions._
 
 
+abstract class DependencyNode {
+  val span: Span
+  val token: Option[Token]
+  val headRelations: mutable.MutableList[DependencyRelation] = mutable.MutableList()
+  val childRelations: mutable.MutableList[DependencyRelation] = mutable.MutableList()
 
-/**
-  * Created by leebecker on 1/8/16.
-  */
+  def nodePath(): Seq[DependencyNode]
+}
 
-case class SparkleToken(word: Option[String])
+case class LeafDependencyNode(span: Span, token: Option[Token]=None) extends DependencyNode {
 
-case class SparkleSentence(token: Seq[SparkleToken])
+  override def nodePath() = {
+    if (headRelations.isEmpty) {
+      this::Nil
+    } else {
+      List(this) ++ headRelations.head.head.nodePath()
+    }
+  }
+}
 
-case class SparkleDocument(sentence: Seq[SparkleSentence])
+case class RootDependencyNode(span: Span, sentence: Option[Sentence]) extends DependencyNode {
+  override val token: Option[Token] = None
 
-object Quick {
-  def convertSparkleSentence(sentenceTokens: java.util.List[java.util.List[String]]) = {
-    new SparkleDocument(
-      sentence=sentenceTokens.seq.map(tokens =>
-        new SparkleSentence(token=tokens.seq.map(token => new SparkleToken(word=Some(token))))
-      )
-    )
+  override def nodePath() = Nil
+}
+
+case class DependencyRelation(relation: String, dependent: DependencyNode, head: DependencyNode) {
+  require(dependent != null, "Dependency Relation can not have null dependent node")
+  require(head != null, "Dependency Relation can not have null head node")
+
+  def span = {
+    val nodeSpan = dependent.span
+    val headSpan = head.span
+    val begin = if (nodeSpan.begin < headSpan.begin) nodeSpan.begin else headSpan.begin
+    val end = if (nodeSpan.end > headSpan.end) nodeSpan.end else headSpan.end
+    Span(begin, end)
   }
 
-
-
 }
 
-
-
-
-trait DependencyNode {
-  val token: Option[Token]
-  val headRelations: mutable.MutableList[DependencyRelation] = mutable.MutableList[DependencyRelation]()
-  val childRelations: mutable.MutableList[DependencyRelation] = mutable.MutableList[DependencyRelation]()
-}
-
-case class DependencyRelation(relation: String, node: DependencyNode, head: DependencyNode)
-
-case class TokenDependencyNode(token: Option[Token]=None, tokenSpan: Option[Span]=None) extends DependencyNode {
-
-}
-
-case class RootDependencyNode(sentence: Sentence) extends DependencyNode {
-  override val token: Option[Token] = None
-}
 
 object DependencyUtils {
   def linkDependencyNodes(relation: String, node: DependencyNode, head: DependencyNode): DependencyRelation = {
@@ -58,6 +56,7 @@ object DependencyUtils {
     head.childRelations += dep
     dep
   }
+
 
   def extractToken(node: DependencyNode) = {
     node match {
@@ -79,14 +78,15 @@ object DependencyUtils {
 
   }
 
-  def extractTriple(node: DependencyNode): (String, String, String) = {
+  def extractTriple(node: DependencyNode): Option[(String, String, String)] = {
     node match {
-      case tokenNode: TokenDependencyNode => extractTriple(tokenNode.headRelations.head)
+      case leafNode: LeafDependencyNode => extractTriple(leafNode.headRelations.head)
+      case _ => None
     }
   }
 
-  def extractTriple(relation: DependencyRelation): (String, String, String) = {
-    (relation.relation, extractToken(relation.node), extractToken(relation.head))
+  def extractTriple(relation: DependencyRelation): Option[(String, String, String)] = {
+    Some((relation.relation, extractToken(relation.dependent), extractToken(relation.head)))
   }
 }
 

@@ -36,3 +36,32 @@ sbt assembly
 sbt publishM2
 ```
 
+Run the console with Spark and all project dependencies
+```
+sbt console root
+```
+
+
+
+Using feature transformers
+```
+import org.sparkle.slate._
+import org.sparkle.slate.spark.SlateExtractorTransformer
+import org.sparkle.slate.extractors._
+
+
+val docs = sc.parallelize(Seq("This is document one.  It has two sentences.")).toDF("text")
+val tokenizer = org.sparkle.clearnlp.sentenceSegmenterAndTokenizer()
+val pipeline = tokenizer
+
+
+// Create extractor which returns features of type Int
+val extractor = SlateExtractorTransformer[Int]()
+val pipelineFunc = (slate: StringSlate) => pipeline(slate)
+extractor.setSlatePipelineFunc(pipelineFunc).setTextCol("text")
+extractor.setExtractors1(Map(
+    "tokenCount" -> TokenCountExtractor,
+    "wordCount" -> TokenCountExtractor
+))
+extractor.transform(docs)
+```

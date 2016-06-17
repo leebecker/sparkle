@@ -7,6 +7,10 @@ import org.sparkle.slate._
   */
 trait PartOfSpeechOps[TOKEN_TYPE, POS_TYPE] {
 
+  def selectPosTags[In <: POS_TYPE](slate: StringSlate, coveringSpan: Span): TraversableOnce[(Span, POS_TYPE)]
+
+  def getPos[In <: POS_TYPE](slate: StringSlate, coveringSpan: Span): POS_TYPE
+
   def getPosTag[In <: POS_TYPE](slate: StringSlate, span: Span, partOfSpeech:POS_TYPE): Option[String]
 
   def createPosTag(tag: String, token: TOKEN_TYPE): POS_TYPE
