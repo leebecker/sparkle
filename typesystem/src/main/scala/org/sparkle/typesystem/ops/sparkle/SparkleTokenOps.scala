@@ -10,7 +10,7 @@ import org.sparkle.typesystem.ops.TokenOps
 object SparkleTokenOps extends TokenOps[Token]{
   override def create(text: String): Token = Token(text)
 
-  override def selectAllTokens[In <: Token](slate: StringSlate): TraversableOnce[(Span, Token)] = slate.iterator[Token]
+  override def selectAllTokens[In <: Token](slate: StringSlate): TraversableOnce[(Span, Token)] = slate.indexedSeq[Token]
 
   override def selectTokens[In <: Token](slate: StringSlate, coveringSpan: Span): TraversableOnce[(Span, Token)] =
     slate.covered[Token](coveringSpan)
