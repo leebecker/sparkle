@@ -8,6 +8,7 @@ import edu.emory.mathcs.nlp.decode.NLPUtils
 import org.sparkle.slate._
 import org.sparkle.typesystem.basic.{Sentence, Token}
 import org.sparkle.typesystem.ops._
+import org.sparkle.typesystem.ops.sparkle.{SparklePartOfSpeechOps, SparkleSentenceOps, SparkleTokenOps}
 
 /**
   * Created by leebecker on 6/14/16.

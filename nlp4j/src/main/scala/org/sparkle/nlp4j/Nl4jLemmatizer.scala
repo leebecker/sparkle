@@ -5,6 +5,7 @@ import org.sparkle.slate._
 import org.sparkle.typesystem.ops._
 import edu.emory.mathcs.nlp.component.morph.english.EnglishMorphAnalyzer
 import org.sparkle.typesystem.basic.Token
+import org.sparkle.typesystem.ops.sparkle.{SparkleLemmaOps, SparklePartOfSpeechOps, SparkleTokenOps}
 
 
 /**

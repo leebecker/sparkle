@@ -9,7 +9,6 @@ import org.sparkle.typesystem.basic.{Sentence,Token}
 import org.sparkle.typesystem.syntax.dependency._
 
 import scala.collection.JavaConversions._
-import scala.collection.mutable
 
 /**
   * SparkLE wrapper for ClearNLP Dependency Parser<p>
@@ -50,7 +49,7 @@ object DependencyParser extends StringAnalysisFunction with Serializable {
   }
 
   def depTreeToDepGraph(sentence: (Span, Sentence), tokens: Seq[(Span, Token)], tree: DEPTree)  = {
-    val nodes = IndexedSeq[DependencyNode](RootDependencyNode(sentence._2)) ++ tokens.map{case (span, token) => TokenDependencyNode(Option(token), Option(span))}
+    val nodes = IndexedSeq[DependencyNode](RootDependencyNode(sentence._1, Some(sentence._2))) ++ tokens.map{case (span, token) => LeafDependencyNode(span, Some(token))}
     val nodeSpans = IndexedSeq(Span(sentence._1.begin, sentence._1.end)) ++ tokens.map{case(span, token) => Span(span.begin, span.end)}
 
     val relations = tree.map { node =>

@@ -5,8 +5,9 @@ import edu.emory.clir.clearnlp.component.utils.{GlobalLexica, NLPUtils}
 import edu.emory.clir.clearnlp.dependency.DEPTree
 import edu.emory.clir.clearnlp.util.lang.TLanguage
 import org.sparkle.slate._
-import org.sparkle.typesystem.basic.{Sentence,Token}
+import org.sparkle.typesystem.basic.{Sentence, Token}
 import org.sparkle.typesystem.ops._
+import org.sparkle.typesystem.ops.sparkle.{SparklePartOfSpeechOps, SparkleSentenceOps, SparkleTokenOps}
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._

@@ -1,7 +1,8 @@
-package org.sparkle.typesystem.ops
+package org.sparkle.typesystem.ops.sparkle
 
 import org.sparkle.slate._
 import org.sparkle.typesystem.basic.Sentence
+import org.sparkle.typesystem.ops.SentenceOps
 
 /**
   * Created by leebecker on 2/5/16.

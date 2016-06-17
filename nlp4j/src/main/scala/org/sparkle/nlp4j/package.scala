@@ -15,4 +15,9 @@ package object nlp4j {
 
   def posTagger(language: Language=Language.ENGLISH, modelPath: String="/edu/emory/mathcs/nlp/models/en-pos.xz") =
     new Nlp4jPosTaggerWithSparkleTypes(language, modelPath)
+
+  def depParser(language: Language=Language.ENGLISH, modelPath: String="/edu/emory/mathcs/nlp/models/en-dep.xz") =
+    new Nlp4jDependencyParserWithSparkleTypes(language, modelPath) {}
+  "/edu/emory/mathcs/nlp/models/en-dep.xz"
+
 }

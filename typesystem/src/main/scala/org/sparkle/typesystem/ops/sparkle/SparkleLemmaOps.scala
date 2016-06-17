@@ -1,7 +1,8 @@
-package org.sparkle.typesystem.ops
+package org.sparkle.typesystem.ops.sparkle
 
 import org.sparkle.slate.{Span, StringSlate}
 import org.sparkle.typesystem.basic.Token
+import org.sparkle.typesystem.ops.LemmaOps
 
 /**
   * Created by leebecker on 6/15/16.

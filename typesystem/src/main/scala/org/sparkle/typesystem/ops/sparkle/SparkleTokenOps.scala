@@ -1,7 +1,8 @@
-package org.sparkle.typesystem.ops
+package org.sparkle.typesystem.ops.sparkle
 
 import org.sparkle.slate._
 import org.sparkle.typesystem.basic.Token
+import org.sparkle.typesystem.ops.TokenOps
 
 /**
   * Created by leebecker on 2/5/16.

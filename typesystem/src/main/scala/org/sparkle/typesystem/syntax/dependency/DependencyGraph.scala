@@ -8,48 +8,33 @@ import scala.collection.JavaConverters._
 import collection.JavaConversions._
 
 
-
-/**
-  * Created by leebecker on 1/8/16.
-  */
-
-case class SparkleToken(word: Option[String])
-
-case class SparkleSentence(token: Seq[SparkleToken])
-
-case class SparkleDocument(sentence: Seq[SparkleSentence])
-
-object Quick {
-  def convertSparkleSentence(sentenceTokens: java.util.List[java.util.List[String]]) = {
-    new SparkleDocument(
-      sentence=sentenceTokens.seq.map(tokens =>
-        new SparkleSentence(token=tokens.seq.map(token => new SparkleToken(word=Some(token))))
-      )
-    )
-  }
-
-
-
-}
-
-
-
-
-trait DependencyNode {
+abstract class DependencyNode {
+  val span: Span
   val token: Option[Token]
-  val headRelations: mutable.MutableList[DependencyRelation] = mutable.MutableList[DependencyRelation]()
-  val childRelations: mutable.MutableList[DependencyRelation] = mutable.MutableList[DependencyRelation]()
+  val headRelations: mutable.MutableList[DependencyRelation] = mutable.MutableList()
+  val childRelations: mutable.MutableList[DependencyRelation] = mutable.MutableList()
 }
 
-case class DependencyRelation(relation: String, node: DependencyNode, head: DependencyNode)
+case class LeafDependencyNode(span: Span, token: Option[Token]=None) extends DependencyNode
 
-case class TokenDependencyNode(token: Option[Token]=None, tokenSpan: Option[Span]=None) extends DependencyNode {
-
-}
-
-case class RootDependencyNode(sentence: Sentence) extends DependencyNode {
+case class RootDependencyNode(span: Span, sentence: Option[Sentence]) extends DependencyNode {
   override val token: Option[Token] = None
 }
+
+case class DependencyRelation(relation: String, dependent: DependencyNode, head: DependencyNode) {
+  require(dependent != null, "Dependency Relation can not have null dependent node")
+  require(head != null, "Dependency Relation can not have null head node")
+
+  def span = {
+    val nodeSpan = dependent.span
+    val headSpan = head.span
+    val begin = if (nodeSpan.begin < headSpan.begin) nodeSpan.begin else headSpan.begin
+    val end = if (nodeSpan.end > headSpan.end) nodeSpan.end else headSpan.end
+    Span(begin, end)
+  }
+
+}
+
 
 object DependencyUtils {
   def linkDependencyNodes(relation: String, node: DependencyNode, head: DependencyNode): DependencyRelation = {
@@ -57,6 +42,16 @@ object DependencyUtils {
     node.headRelations += dep
     head.childRelations += dep
     dep
+  }
+
+
+  def filterToLeafNodes(nodes: TraversableOnce[DependencyNode]) = {
+    nodes.flatten{
+      case (node: RootDependencyNode) => None
+      case (node) => Some(node)
+    }
+
+
   }
 
   def extractToken(node: DependencyNode) = {
@@ -79,14 +74,15 @@ object DependencyUtils {
 
   }
 
-  def extractTriple(node: DependencyNode): (String, String, String) = {
+  def extractTriple(node: DependencyNode): Option[(String, String, String)] = {
     node match {
-      case tokenNode: TokenDependencyNode => extractTriple(tokenNode.headRelations.head)
+      case leafNode: LeafDependencyNode => extractTriple(leafNode.headRelations.head)
+      case _ => None
     }
   }
 
-  def extractTriple(relation: DependencyRelation): (String, String, String) = {
-    (relation.relation, extractToken(relation.node), extractToken(relation.head))
+  def extractTriple(relation: DependencyRelation): Option[(String, String, String)] = {
+    Some((relation.relation, extractToken(relation.dependent), extractToken(relation.head)))
   }
 }
 

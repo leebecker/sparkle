@@ -10,11 +10,13 @@ import org.sparkle.slate._
 import org.apache.commons.io.IOUtils
 import org.sparkle.preprocess.{SparkleSentenceSegmenterAndTokenizer, SparkleTokenizer}
 import org.sparkle.typesystem.basic.{Sentence, Token}
-import org.sparkle.typesystem.ops.{SentenceOps, SparkleSentenceOps, SparkleTokenOps, TokenOps}
+import org.sparkle.typesystem.ops.{SentenceOps, TokenOps}
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._
 import org.sparkle.preprocess
+import org.sparkle.typesystem.ops.sparkle.{SparkleSentenceOps, SparkleTokenOps}
+
 import scala.reflect.ClassTag
 
 /**

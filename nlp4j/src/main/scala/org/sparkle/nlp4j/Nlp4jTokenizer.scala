@@ -5,7 +5,8 @@ import edu.emory.mathcs.nlp.tokenization.EnglishTokenizer
 import org.sparkle.preprocess
 import org.sparkle.slate.{Span, _}
 import org.sparkle.typesystem.basic.{Sentence, Token}
-import org.sparkle.typesystem.ops.{SentenceOps, SparkleSentenceOps, SparkleTokenOps, TokenOps}
+import org.sparkle.typesystem.ops.sparkle.{SparkleSentenceOps, SparkleTokenOps}
+import org.sparkle.typesystem.ops.{SentenceOps, TokenOps}
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._
