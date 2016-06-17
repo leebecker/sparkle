@@ -13,12 +13,25 @@ abstract class DependencyNode {
   val token: Option[Token]
   val headRelations: mutable.MutableList[DependencyRelation] = mutable.MutableList()
   val childRelations: mutable.MutableList[DependencyRelation] = mutable.MutableList()
+
+  def nodePath(): Seq[DependencyNode]
 }
 
-case class LeafDependencyNode(span: Span, token: Option[Token]=None) extends DependencyNode
+case class LeafDependencyNode(span: Span, token: Option[Token]=None) extends DependencyNode {
+
+  override def nodePath() = {
+    if (headRelations.isEmpty) {
+      this::Nil
+    } else {
+      List(this) ++ headRelations.head.head.nodePath()
+    }
+  }
+}
 
 case class RootDependencyNode(span: Span, sentence: Option[Sentence]) extends DependencyNode {
   override val token: Option[Token] = None
+
+  override def nodePath() = Nil
 }
 
 case class DependencyRelation(relation: String, dependent: DependencyNode, head: DependencyNode) {
