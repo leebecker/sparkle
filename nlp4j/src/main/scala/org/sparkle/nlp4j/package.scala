@@ -19,7 +19,9 @@ package object nlp4j {
     * @param language
     * @return
     */
-  def sentenceSegmenterAndTokenizer(language: Language=Language.ENGLISH) = new Nlp4jSentenceSegmenterAndTokenizerWithSparkleTypes(language)
+  def sentenceSegmenterAndTokenizer(language: Language=Language.ENGLISH,
+                                    addSentences:Boolean=true,
+                                    addTokens:Boolean=true) = new Nlp4jSentenceSegmenterAndTokenizerWithSparkleTypes(language, addSentences, addTokens)
 
   /**
     * Convenience method for creating NLP4J lemmatizer wrapper

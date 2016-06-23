@@ -45,7 +45,7 @@ abstract class Nlp4jTokenizerImplBase[TOKEN](language: Language = Language.ENGLI
 
 
 abstract class Nlp4jSentenceSegmenterAndTokenizerImplBase[SENTENCE, TOKEN](
-  language: Language = Language.ENGLISH)
+  language: Language = Language.ENGLISH, addSentences: Boolean=true, addTokens: Boolean=true)
   extends preprocess.SparkleSentenceSegmenterAndTokenizer[SENTENCE, TOKEN] {
 
   require(language == Language.ENGLISH, s"Language $language unsupported in Sparkle NLP4j Tokenizer Wrapper.")
@@ -77,8 +77,8 @@ abstract class Nlp4jSentenceSegmenterAndTokenizerImplBase[SENTENCE, TOKEN](
     ).flatMap(t=>t)
 
     // Create new Add annotations to a
-    val slateWithSentences = sentenceOps.addSentences(slate, spansAndSentences)
-    tokenOps.addTokens(slateWithSentences, spansAndTokens)
+    val slateWithSentences = if (addSentences) sentenceOps.addSentences(slate, spansAndSentences) else slate
+    if (addTokens) tokenOps.addTokens(slateWithSentences, spansAndTokens) else slateWithSentences
   }
 }
 
@@ -94,8 +94,10 @@ class Nlp4jTokenizerWithSparkleTypes(language: Language=Language.ENGLISH) extend
   * Prerequisites: StringSlate object <br>
   * Outputs: new StringSlate object with Sentence and Token annotations <br>
   */
-class Nlp4jSentenceSegmenterAndTokenizerWithSparkleTypes(language: Language=Language.ENGLISH)
-  extends Nlp4jSentenceSegmenterAndTokenizerImplBase[Sentence, Token](language) {
+class Nlp4jSentenceSegmenterAndTokenizerWithSparkleTypes(language: Language=Language.ENGLISH,
+                                                         addSentences: Boolean=true,
+                                                         addTokens: Boolean=true)
+  extends Nlp4jSentenceSegmenterAndTokenizerImplBase[Sentence, Token](language, addSentences, addTokens) {
 
   override val sentenceOps: SentenceOps[Sentence] = SparkleSentenceOps
   override val tokenOps: TokenOps[Token] = SparkleTokenOps
