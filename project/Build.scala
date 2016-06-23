@@ -7,7 +7,7 @@ import Keys._
 object SparkleBuild extends Build {
 
   lazy val commonSettings = Seq(
-    organization := "com.sparkle",
+    organization := "org.sparkle",
     version := "0.1-SNAPSHOT",
     scalaVersion := "2.10.6",
     //ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) },
