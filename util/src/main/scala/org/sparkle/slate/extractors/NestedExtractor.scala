@@ -1,7 +1,7 @@
 package org.sparkle.slate.extractors
 
 import org.sparkle.slate._
-import org.sparkle.slate.spark.StringSlateExtractor
+import org.sparkle.slate.StringSlateExtractor
 import org.sparkle.typesystem.basic.{Sentence, Token}
 
 
