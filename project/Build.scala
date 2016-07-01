@@ -44,14 +44,16 @@ object SparkleBuild extends Build {
     settings(
       aggregate in update := false,
       libraryDependencies ++= SparkConfig.deps.map(_ % "provided"),
-      // For some reason jline seems to be 
+      // For some reason jline seems to be causing issues
       libraryDependencies += "org.scala-lang" % "scala-library" % "2.10.3" exclude("jline", "jline"),
         initialCommands in console := """
         val sc = new org.apache.spark.SparkContext("local", "shell")
         val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
         import sqlContext.implicits._
         import org.apache.spark.sql.functions._
-      """
+      """,
+      publish := {},
+      publishLocal := {}
     )
 
   lazy val testutil = Project(id ="sparkle-test-util", base = file("testutil"))
@@ -96,21 +98,6 @@ object SparkleBuild extends Build {
     dependsOn(core % "test->test;compile->compile").
     dependsOn(typesystem % "test->test;compile->compile").
     dependsOn(util % "test->test;compile->compile")
-
-  lazy val shell = Project(id = "sparkle-shell", base = file("shell")).
-    settings(commonSettings).
-    dependsOn(root).
-    settings(
-      initialCommands in console := """
-        val sc = new org.apache.spark.SparkContext("local", "shell")
-        val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
-        import sqlContext.implicits._
-        import org.apache.spark.sql.functions._
-      """
-    ).
-    settings(
-      run in Compile <<= Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run))
-    )
 
   libraryDependencies ++= Seq(
     //"org.scala-lang" % "scala-reflect" % "2.10.6"
