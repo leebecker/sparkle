@@ -1,4 +1,4 @@
-package org.sparkle.slate.spark
+package org.sparkle.spark
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Transformer
@@ -26,14 +26,14 @@ object MapPartitionsHelper {
 /**
   *  A [[org.apache.spark.sql.DataFrame DataFrame]] [[org.apache.spark.ml.Transformer transformer]]
   *  which runs a [[org.sparkle.slate.Slate String Slate]] pipeline function
-  *  on a text column and subsequently extracts values using a collection of [[org.sparkle.slate.spark.StringSlateExtractor StringSlateExtractors]].
+  *  on a text column and subsequently extracts values using a collection of [[org.sparkle.slate.StringSlateExtractor StringSlateExtractors]].
   *
   *  This is useful for running NLP pipelines consisting of [[org.sparkle.slate.AnalysisFunction Slate AnalysisFunctions]] to annotate text
   *  and to extract features for training machine learning algorithms or other analyses.
  *
   * @tparam T1 Type returned by extractors.  The type must be serializable and compatible with Spark DataFrame [[org.apache.spark.sql.types.DataType DataTypes]].  Extracted values
-  *            are homogeneous. For heterogeneous extraction use [[org.sparkle.slate.spark.SlateExtractorTransformer2 SlateExtractorTransformer2]] or
-  *            [[org.sparkle.slate.spark.SlateExtractorTransformer3 SlateExtractorTransformer3]].
+  *            are homogeneous. For heterogeneous extraction use [[org.sparkle.spark.SlateExtractorTransformer2 SlateExtractorTransformer2]] or
+  *            [[org.sparkle.spark.SlateExtractorTransformer3 SlateExtractorTransformer3]].
   */
 class SlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) extends Transformer {
   def this() = this(Identifiable.randomUID("sparkler_slate_extractor"))
@@ -145,7 +145,7 @@ class SlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) e
 }
 
 /**
-  * Two type version of [[org.sparkle.slate.spark.SlateExtractorTransformer SlateExtractorTransformer]].  Use this instead of the one type version if
+  * Two type version of [[org.sparkle.spark.SlateExtractorTransformer SlateExtractorTransformer]].  Use this instead of the one type version if
   * your extraction types are heterogeneous. For example the extraction flow produces integers, doubles and complex structs.
   *
   * @tparam T1 Type returned by first set of extractors.  The type must be serializable and compatible with Spark DataFrame [[org.apache.spark.sql.types.DataType DataTypes]].
@@ -177,7 +177,7 @@ class SlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag](overr
 }
 
 /**
-  * Three type version of [[org.sparkle.slate.spark.SlateExtractorTransformer SlateExtractorTransformer]].  Use this instead of the one type version if
+  * Three type version of [[org.sparkle.spark.SlateExtractorTransformer SlateExtractorTransformer]].  Use this instead of the one type version if
   * your extraction types are heterogeneous. For example the extraction flow produces integers, doubles and complex structs.
   *
   * @tparam T1 Type returned by first set of extractors.  The type must be serializable and compatible with Spark DataFrame [[org.apache.spark.sql.types.DataType DataTypes]].

@@ -8,6 +8,7 @@ import org.sparkle.clearnlp
 import org.apache.spark.{SparkConf, SparkContext}
 import org.sparkle.slate.analyzers.RegexSplitTokenizer
 
+/*
 object SparkTestUtils {
   val sentenceSegmenterAndTokenizer = clearnlp.sentenceSegmenterAndTokenizer()
   val posTagger: StringAnalysisFunction = clearnlp.posTagger()
@@ -17,7 +18,9 @@ object SparkTestUtils {
   //def opennlpPipeline(s: StringSlate[Any]) = org.sparkle.opennlp.SentenceSegmenter.apply(s)
   val regexPipeline = new RegexSplitTokenizer("""[\W]+\s*""")
 }
+*/
 
+/*
 class SparkTest extends FunSuite with Matchers {
   val appName = "SparkleSparkTest"
   val conf = new SparkConf().setAppName(appName).setMaster("local[4]")
@@ -93,3 +96,4 @@ class SparkTest extends FunSuite with Matchers {
     assert(nnCounts == nnCountsExpected)
   }
 }
+*/

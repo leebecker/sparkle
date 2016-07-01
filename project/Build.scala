@@ -4,13 +4,27 @@ import Keys._
 /**
   * based on https://github.com/harrah/xsbt/wiki/Getting-Started-Multi-Project
   */
+
+
+object SparkConfig {
+  lazy val sparkVersion = "1.6.1"
+  lazy val deps = Seq(
+    "org.apache.spark" %% "spark-core" % sparkVersion,
+    "org.apache.spark" %% "spark-sql" % sparkVersion,
+    "org.apache.spark" %% "spark-hive" % sparkVersion,
+    "org.apache.spark" %% "spark-mllib" % sparkVersion,
+    "org.apache.spark" %% "spark-repl" % sparkVersion
+  )
+}
+
 object SparkleBuild extends Build {
+
 
   lazy val commonSettings = Seq(
     organization := "org.sparkle",
     version := "0.1-SNAPSHOT",
     scalaVersion := "2.10.6",
-    //ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) },
+    ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) },
     // Require Java 1.8
     initialize := {
       val required = "1.8"
@@ -23,25 +37,23 @@ object SparkleBuild extends Build {
   // dependsOn: a project depends on code in another project.
   // without dependsOn, you'll get a compiler error: "object bar is not a member of package
   // com.alvinalexander".
-  lazy val sparkAndDependencies2 = Seq(
-    "org.apache.spark" % "spark-core_2.10" % "1.6.1",
-    "org.apache.spark" % "spark-sql_2.10" % "1.6.1",
-    "org.apache.spark" % "spark-hive_2.10" % "1.6.1",
-    "org.apache.spark" % "spark-mllib_2.10" % "1.6.1",
-    "org.apache.spark" % "spark-repl_2.10" % "1.6.1"
-  )
 
   lazy val root = Project(id = "sparkle", base = file(".")).
-    aggregate(core, typesystem, util, clearnlp, nlp4j).
-    dependsOn(core, typesystem, util, clearnlp, nlp4j).
+    aggregate(core, typesystem, util, clearnlp, nlp4j, spark).
+    dependsOn(core, typesystem, util, clearnlp, nlp4j, spark).
     settings(
-      libraryDependencies ++= sparkAndDependencies2.map(_ % "provided"),
-      initialCommands in console := """
+      aggregate in update := false,
+      libraryDependencies ++= SparkConfig.deps.map(_ % "provided"),
+      // For some reason jline seems to be causing issues
+      libraryDependencies += "org.scala-lang" % "scala-library" % "2.10.3" exclude("jline", "jline"),
+        initialCommands in console := """
         val sc = new org.apache.spark.SparkContext("local", "shell")
         val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
         import sqlContext.implicits._
         import org.apache.spark.sql.functions._
-      """
+      """,
+      publish := {},
+      publishLocal := {}
     )
 
   lazy val testutil = Project(id ="sparkle-test-util", base = file("testutil"))
@@ -60,6 +72,11 @@ object SparkleBuild extends Build {
     settings(commonSettings).
     dependsOn(core).
     dependsOn(typesystem).
+    dependsOn(testutil % "test->compile")
+
+  lazy val spark = Project(id = "sparkle-spark", base = file("spark")).
+    settings(commonSettings).
+    dependsOn(core).
     dependsOn(testutil % "test->compile")
 
   lazy val clearnlp = Project(id = "sparkle-clearnlp", base = file("clearnlp")).
@@ -82,47 +99,13 @@ object SparkleBuild extends Build {
     dependsOn(typesystem % "test->test;compile->compile").
     dependsOn(util % "test->test;compile->compile")
 
-  lazy val shell = Project(id = "sparkle-shell", base = file("shell")).
-    settings(commonSettings).
-    dependsOn(root).
-    settings(
-      initialCommands in console := """
-        val sc = new org.apache.spark.SparkContext("local", "shell")
-        val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
-        import sqlContext.implicits._
-        import org.apache.spark.sql.functions._
-      """
-    ).
-    settings(
-      run in Compile <<= Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run))
-    )
-
   libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-reflect" % "2.10.6"
+    //"org.scala-lang" % "scala-reflect" % "2.10.6"
     //"org.scala-lang.modules" % "scala-xml_2.11" % "1.0.4"
   )
 
-  /*
-  libraryDependencies += "jline" % "jline" % "2.10.5"
-
-  lazy val sparkAndDependencies2 = Seq(
-    "org.apache.spark" % "spark-core_2.10" % "1.6.1",
-    "org.apache.spark" % "spark-sql_2.10" % "1.6.1",
-    "org.apache.spark" % "spark-hive_2.10" % "1.6.1",
-    "org.apache.spark" % "spark-mllib_2.10" % "1.6.1",
-    "org.apache.spark" % "spark-repl_2.10" % "1.6.1"
-  )
-  libraryDependencies ++= sparkAndDependencies2.map(_ % "provided")
-
-  initialCommands in console := s"""
-  val sc = new org.apache.spark.SparkContext("local", "shell")
-  val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
-  import sqlContext.implicits._
-  import org.apache.spark.sql.functions._
-  """
 
   // Assembly gets provided as well
-  run in Compile <<= Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run))
-  */
+  //run in Compile <<= Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run))
 
 }
