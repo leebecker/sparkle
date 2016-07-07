@@ -12,7 +12,7 @@ import org.sparkle.slate.AnnotatedSpan.{EndFirstSpanOrdering, SpanOrdering}
   * A Slate is a central data structure for annotating content by regions.  Most typically, this will be a
   * Text with Spans.
   */
-trait Slate[ContentType, RegionType] {
+trait Slate[ContentType, RegionType] extends Serializable {
 
   val content: ContentType
 
@@ -110,7 +110,7 @@ object AnnotatedSpan {
 
 object Slate {
 
-  trait ExtractRegion[Region, T] {
+  trait ExtractRegion[Region, T] extends Serializable {
     def apply(region: Region, t: T):T
   }
 
