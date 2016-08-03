@@ -15,6 +15,9 @@ abstract class DependencyNode {
   val childRelations: mutable.MutableList[DependencyRelation] = mutable.MutableList()
 
   def nodePath(): Seq[DependencyNode]
+
+  override def toString = if (token.isDefined) token.get.token else "_UNDEFINED_"
+
 }
 
 case class LeafDependencyNode(span: Span, token: Option[Token]=None) extends DependencyNode {
@@ -26,12 +29,15 @@ case class LeafDependencyNode(span: Span, token: Option[Token]=None) extends Dep
       List(this) ++ headRelations.head.head.nodePath()
     }
   }
+
 }
 
 case class RootDependencyNode(span: Span, sentence: Option[Sentence]) extends DependencyNode {
   override val token: Option[Token] = None
 
   override def nodePath() = Nil
+
+  override def toString = "_TOP_"
 }
 
 case class DependencyRelation(relation: String, dependent: DependencyNode, head: DependencyNode) {
@@ -45,6 +51,8 @@ case class DependencyRelation(relation: String, dependent: DependencyNode, head:
     val end = if (nodeSpan.end > headSpan.end) nodeSpan.end else headSpan.end
     Span(begin, end)
   }
+
+  override def toString = s"$relation($dependent, $head)"
 
 }
 
@@ -88,6 +96,7 @@ object DependencyUtils {
   def extractTriple(relation: DependencyRelation): Option[(String, String, String)] = {
     Some((relation.relation, extractToken(relation.dependent), extractToken(relation.head)))
   }
+
 }
 
 
