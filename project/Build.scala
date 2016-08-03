@@ -51,6 +51,11 @@ object SparkleBuild extends Build {
         val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
         import sqlContext.implicits._
         import org.apache.spark.sql.functions._
+        import org.apache.log4j.Logger
+        import org.apache.log4j.Level
+
+        Logger.getLogger("org").setLevel(Level.OFF)
+        Logger.getLogger("akka").setLevel(Level.OFF)
       """,
       publish := {},
       publishLocal := {}
