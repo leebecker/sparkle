@@ -8,7 +8,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.{DataFrame, Dataset, Row}
 import org.sparkle.slate._
 
 import scala.reflect.ClassTag
@@ -101,13 +101,15 @@ class SlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) e
     }
   }
 
-  override def transform(dataset: DataFrame): DataFrame =  {
-    val datasetRdd = dataset.rdd
-    val textRdd = dataset.select(col($(textCol))).map(_.getAs[String](0))
+  override def transform(dataset: Dataset[_]): DataFrame =  {
+    val datasetRowsRdd = dataset.toDF().rdd
+    val textRdd = dataset.select(col($(textCol))).rdd//.as[String].rdd
+
+      .map(_.getAs[String](0))
     val extractedRdd = extractFromText(textRdd)
 
     // Combine extracted output with original input in a RowRDD
-    val datasetWithExtractor1Rdd = datasetRdd.zip(extractedRdd).map{case (rows, newCols) => Row(rows.toSeq ++ newCols: _*)}
+    val datasetWithExtractor1Rdd = datasetRowsRdd.zip(extractedRdd).map{case (rows, newCols) => Row(rows.toSeq ++ newCols: _*)}
 
     // Convert back to a DataFrame
     dataset.sqlContext.createDataFrame(datasetWithExtractor1Rdd, transformSchema(dataset.schema))
