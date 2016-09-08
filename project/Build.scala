@@ -7,7 +7,7 @@ import Keys._
 
 
 object SparkConfig {
-  lazy val sparkVersion = "1.6.1"
+  lazy val sparkVersion = "2.0.0"
   lazy val deps = Seq(
     "org.apache.spark" %% "spark-core" % sparkVersion,
     "org.apache.spark" %% "spark-sql" % sparkVersion,
@@ -20,10 +20,12 @@ object SparkConfig {
 object SparkleBuild extends Build {
 
 
+
   lazy val commonSettings = Seq(
     organization := "org.sparkle",
-    version := "0.1-SNAPSHOT",
-    scalaVersion := "2.10.6",
+    version := "0.2-SNAPSHOT",
+    scalaVersion in ThisBuild := "2.11.8",
+    autoScalaLibrary := false,
     ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) },
     // Require Java 1.8
     initialize := {
@@ -45,7 +47,7 @@ object SparkleBuild extends Build {
       aggregate in update := false,
       libraryDependencies ++= SparkConfig.deps.map(_ % "provided"),
       // For some reason jline seems to be causing issues
-      libraryDependencies += "org.scala-lang" % "scala-library" % "2.10.3" exclude("jline", "jline"),
+      //libraryDependencies += "org.scala-lang" % "scala-library" % "2.11.8" exclude("jline", "jline"),
         initialCommands in console := """
         val sc = new org.apache.spark.SparkContext("local", "shell")
         val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
@@ -61,7 +63,8 @@ object SparkleBuild extends Build {
       publishLocal := {}
     )
 
-  lazy val testutil = Project(id ="sparkle-test-util", base = file("testutil"))
+  lazy val testutil = Project(id ="sparkle-test-util", base = file("testutil")).
+    settings(commonSettings)
 
   lazy val core = Project(id = "sparkle-core",
     base = file("core")).

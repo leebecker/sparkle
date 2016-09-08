@@ -12,5 +12,5 @@ libraryDependencies ++= clearNlpAndDependencies
 
 libraryDependencies += "org.apache.commons" % "commons-io" % "1.3.2"
 
-libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.10" % "provided"
-libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.10" % "provided"
+libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.21" % "provided"
+libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.21" % "provided"
