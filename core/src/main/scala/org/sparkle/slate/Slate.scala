@@ -179,8 +179,8 @@ object Slate {
 
     override def covered[A  : ClassTag](region: Span): IndexedSeq[(Span, A)] = {
       val annotations = selectAnnotations[A]
-      var begin = BinarySearch.interpolationSearch(annotations, (_:(Span, Any))._1.begin, region.begin)
-      if(begin < 0) begin = ~begin
+      var begin = BinarySearch.interpolationSearch(annotations, (s: (Span, Any)) => s._1.begin, region.begin)
+      if (begin < 0) begin = ~begin
       var end = annotations.indexWhere(_._1.end > region.end, begin)
       if(end < 0) end = annotations.length
       annotations.slice(begin, end)
