@@ -22,10 +22,9 @@ object MapPartitionsHelper {
   })
 }
 
-trait SlateExtractorTransformerOutput
-case class SlateExtractorTransformerOutput1[T1](extracted1: Map[String, T1]) extends SlateExtractorTransformerOutput
-case class SlateExtractorTransformerOutput2[T1, T2](extracted1: Map[String, T1], extracted2: Map[String, T2]) extends SlateExtractorTransformer
-case class SlateExtractorTransformerOutput3[T1, T2, T3](extracted1: Map[String, T1], extracted2: Map[String, T2], extracted3: Map[String, T3]) extends SlateExtractorTransformer
+case class SlateExtractorTransformerOutput1[T1](extracted1: Map[String, T1])
+case class SlateExtractorTransformerOutput2[T1, T2](extracted1: Map[String, T1], extracted2: Map[String, T2])
+case class SlateExtractorTransformerOutput3[T1, T2, T3](extracted1: Map[String, T1], extracted2: Map[String, T2], extracted3: Map[String, T3])
 
 /**
   *  A [[org.apache.spark.sql.DataFrame DataFrame]] [[org.apache.spark.ml.Transformer transformer]]
@@ -95,20 +94,16 @@ class SlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) e
   def setMapPartitionsOnExtractors(value: Boolean): this.type = set("mapPartitionsOnExtractors", value)
   setDefault(mapPartitionsOnExtractors -> false)
 
-  def makeZip(s: Seq[RDD[_]]): RDD[Seq[_]] = {
-    println(s)
-    if (s.length == 1)
-      s.head.map(e => Seq(e))
-    else {
-      val others = makeZip(s.tail)
-      val all = s.head.zip(others)
-      all.map(elem => Seq(elem._1) ++ elem._2)
-    }
-  }
-
   def extract(sparkSession: SparkSession, slateRdd: RDD[StringSlate]) = {
     import sparkSession.implicits._
-    val extractedRdd = slateRdd.map(slate=>runExtractors1(slate)).map(SlateExtractorTransformerOutput1(_))
+
+    val extractFunc = (slate: StringSlate) => SlateExtractorTransformerOutput1(runExtractors1(slate))
+
+    val extractedRdd = if (getMapPartitionsOnExtractors) {
+      slateRdd.mapPartitions(slateIter => slateIter.map(extractFunc))
+    } else {
+      slateRdd.map(extractFunc)
+    }
     extractedRdd.toDS().toDF()
   }
 
@@ -152,7 +147,6 @@ class SlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) e
   def runExtractors1(slate: StringSlate): Map[String, T1] = {
     getExtractors1.map{ case (extractorName, extractor) => (extractorName, extractor(slate)) }
   }
-
 
   def runSlatePipelineFunc(textRdd: RDD[String]) =
     if (getMapPartitionsOnPipeline) {
@@ -198,15 +192,25 @@ class SlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag](overr
     super.getExtractorSchemas ++ schema2
   }
 
+
   def runExtractors2(slate: StringSlate): Map[String, T2] = {
       getExtractors2.map{ case (extractorName, extractor) => (extractorName, extractor(slate)) }
   }
 
   override def extract(sparkSession: SparkSession, slateRdd: RDD[StringSlate]): DataFrame = {
     import sparkSession.implicits._
-    val extractedRdd = slateRdd.map(slate => SlateExtractorTransformerOutput2(runExtractors1(slate), runExtractors2(slate)))
+
+    val extractFunc = (slate: StringSlate) =>
+       SlateExtractorTransformerOutput2(runExtractors1(slate), runExtractors2(slate))
+
+    val extractedRdd = if (getMapPartitionsOnPipeline) {
+      slateRdd.mapPartitions(slateIter => slateIter.map(extractFunc))
+    } else {
+      slateRdd.map(extractFunc)
+    }
     extractedRdd.toDS().toDF()
   }
+
 
   override def flattenExtracted(extractedDf: DataFrame): DataFrame = {
     val extract1 = super.flattenExtracted(extractedDf)
@@ -255,7 +259,15 @@ class SlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag](overr
 
   override def extract(sparkSession: SparkSession, slateRdd: RDD[StringSlate]): DataFrame = {
     import sparkSession.implicits._
-    val extractedRdd = slateRdd.map(slate=>SlateExtractorTransformerOutput3(runExtractors1(slate), runExtractors2(slate), runExtractors3(slate)))
+
+    val extractFunc = (slate: StringSlate) =>
+       SlateExtractorTransformerOutput3(runExtractors1(slate), runExtractors2(slate), runExtractors3(slate))
+
+    val extractedRdd = if (getMapPartitionsOnPipeline) {
+      slateRdd.mapPartitions(slateIter => slateIter.map(extractFunc))
+    } else {
+      slateRdd.map(extractFunc)
+    }
     extractedRdd.toDS().toDF()
   }
 
