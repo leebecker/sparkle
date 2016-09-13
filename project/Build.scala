@@ -49,10 +49,14 @@ object SparkleBuild extends Build {
       // For some reason jline seems to be causing issues
       //libraryDependencies += "org.scala-lang" % "scala-library" % "2.11.8" exclude("jline", "jline"),
         initialCommands in console := """
-        val sc = new org.apache.spark.SparkContext("local", "shell")
-        val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
-        import sqlContext.implicits._
+        val sparkSession = org.apache.spark.sql.SparkSession.builder.
+          master("local[*]").
+          enableHiveSupport().
+          getOrCreate()
+
+        import sparkSession.implicits._
         import org.apache.spark.sql.functions._
+
         import org.apache.log4j.Logger
         import org.apache.log4j.Level
 

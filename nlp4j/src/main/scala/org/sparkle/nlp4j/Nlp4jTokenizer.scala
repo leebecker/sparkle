@@ -1,7 +1,7 @@
 package org.sparkle.nlp4j
 
 import edu.emory.mathcs.nlp.common.util.Language
-import edu.emory.mathcs.nlp.tokenization.EnglishTokenizer
+import edu.emory.mathcs.nlp.component.tokenizer.EnglishTokenizer
 import org.sparkle.preprocess
 import org.sparkle.slate.{Span, _}
 import org.sparkle.typesystem.basic.{Sentence, Token}
