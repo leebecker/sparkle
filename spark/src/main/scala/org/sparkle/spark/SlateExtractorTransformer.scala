@@ -129,22 +129,20 @@ class SlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) e
     val slateRdd = runSlatePipelineFunc(textRdd)
     val extractedDf = extract(dataset.sparkSession, slateRdd)
 
+    // Zip RDDs from original dataset and the extracted values
+    // This is possible because the operations thus far have not
+    // changed the number of partitions nor the number of rows
+    val mergedRowsRdd = (datasetRowsRdd zip extractedDf.rdd).map {
+      case (rowLeft, rowRight) => Row.fromSeq(rowLeft.toSeq ++ rowRight.toSeq)
+    }
+    val mergedSchema = StructType(dataset.schema.fields ++ extractedDf.schema.fields)
+    val mergedDf = dataset.sparkSession.createDataFrame(mergedRowsRdd, StructType(mergedSchema))
+
     // Flatten extracted columns into columns of their own
-    flattenExtracted(extractedDf)
-    //val res = $(extractors1).keys.foldLeft(extractedDf)((df, colname) => df.withColumn(colname, col(s"extracted1.$colname"))).drop("extracted1")
-
-    //val extractedRdd = extractFromText(textRdd)
-
-    // Combine extracted output with original input in a RowRDD
-    //val datasetWithExtractor1Rdd = datasetRowsRdd.zip(extractedRdd).map{case (rows, newCols) => Row(rows.toSeq ++ newCols: _*)}
-
-    // Convert back to a DataFrame
-    //dataset.sparkSession.createDataFrame(datasetWithExtractor1Rdd, transformSchema(dataset.schema))
-    //dataset.sparkSession.createDataset(extractedRdd).toDF
+    flattenExtracted(mergedDf)
   }
 
-  //def getExtractors: Map[String, Map[String, StringSlateExtractor[_]]] = Map("extract1" -> getExtractors1)
-  def getExtractors: Map[String, Seq[(String, StringSlateExtractor[_])]] = Map("extractors1"->getExtractors1.toSeq)
+  def getExtractors: Seq[(String, StringSlateExtractor[_])] = getExtractors1.toSeq
   def getExtractorSchemas: Seq[StructField] = {
     val dataType1 = ScalaReflection.schemaFor[T1].dataType
     for ((extractorName, extractor) <- getExtractors1.toSeq)
@@ -162,27 +160,6 @@ class SlateExtractorTransformer[T1:TypeTag:ClassTag](override val uid: String) e
     } else {
       textRdd.map(Slate(_)).map(getSlatePipelineFunc)
     }
-
-
-  /*
-  def extractFromText(textRdd: RDD[String]): RDD[SlateExtractorTransformerOutput1[T1]] = {
-
-    val slateOutRdd = if (getMapPartitionsOnPipeline) {
-      MapPartitionsHelper.wrapPipelineFunc(textRdd, getSlatePipelineFunc)
-    } else {
-      textRdd.map(Slate(_)).map(getSlatePipelineFunc)
-    }
-
-    /*
-    val extractedColumnRDDs = if (getMapPartitionsOnExtractors) {
-      for ((extractorName, extractor) <- getExtractors) yield slateOutRdd.mapPartitions(iterator => iterator.map(extractor(_)))
-    } else {
-    */
-      val extractedRdds = slateOutRdd.map(slate=>SlateExtractorTransformerOutput1(runExtractors(slate, getExtractors1)))
-    //}
-    extractedRdds
-  }
-  */
 
   override def copy(extra: ParamMap): org.apache.spark.ml.Transformer = defaultCopy(extra)
 
@@ -212,7 +189,7 @@ class SlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag](overr
   def setExtractors2(value: Map[String, ExtractorsType2]): this.type = set("extractors2", value)
   setDefault(extractors2-> Map())
 
-//  override def getExtractors = super.getExtractors ++ getExtractors2.toSeq
+  override def getExtractors = super.getExtractors ++ getExtractors2.toSeq
 
   override def getExtractorSchemas = {
     val dataType2 = ScalaReflection.schemaFor[T2].dataType
@@ -263,7 +240,7 @@ class SlateExtractorTransformer2[T1:TypeTag:ClassTag, T2:TypeTag:ClassTag](overr
   def setExtractors3(value: Map[String, ExtractorsType3]): this.type = set("extractors3", value)
   setDefault(extractors3-> Map())
 
-//  override def getExtractors = super.getExtractors ++ getExtractors3
+  override def getExtractors = super.getExtractors ++ getExtractors3
 
   override def getExtractorSchemas = {
     val dataType = ScalaReflection.schemaFor[T2].dataType
