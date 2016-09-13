@@ -1,10 +1,9 @@
 package org.sparkle.nlp4j
 
-import edu.emory.mathcs.nlp.common.util.Language
+import edu.emory.mathcs.nlp.common.util.{Language, NLPUtils}
 import edu.emory.mathcs.nlp.component.dep.DEPState
 import edu.emory.mathcs.nlp.component.template.OnlineComponent
 import edu.emory.mathcs.nlp.component.template.node.NLPNode
-import edu.emory.mathcs.nlp.decode.NLPUtils
 import org.sparkle.slate._
 import org.sparkle.typesystem.basic.{Sentence, Token}
 import org.sparkle.typesystem.ops._
