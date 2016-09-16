@@ -67,21 +67,23 @@ abstract class Nlp4jDependencyParserImplBase[SENTENCE, TOKEN, POSTAG, LEMMA, NOD
       val nodes = Array(rootNode) ++ tokenNodes
       Nlp4jUtils.lexica.process(nodes)
 
+      // call the nlp4j parser.  Results get written to nodes
       parser.process(nodes)
 
       // now pull out the nodes and build a dependency graph
       val (depNodes, depRels) = convertToDependencyGraph(tokens.map(_._2), nodes)
-      val slateWithNodes = dependencyOps.addNodes(slate, depNodes)
-      val slateWithRelations = dependencyOps.addRelations(slateWithNodes, depRels)
-      slateWithRelations
+      (depNodes, depRels)
   }
 
 
   override def apply(slate: StringSlate): StringSlate = {
 
-    val sentences = sentenceOps.selectAllSentences(slate)
-    val slateOut = sentences.foldLeft[StringSlate](slate)(
-      (slate, sentenceSpan) => processSentence(slate, sentenceSpan._1, sentenceSpan._2))
+    val sentences = sentenceOps.selectAllSentences(slate).toIndexedSeq
+
+    val (nodes, relations) = sentences.toSeq.map(sent=>processSentence(slate, sent._1, sent._2)).unzip
+
+    val slateWithNodes = dependencyOps.addNodes(slate, nodes.flatten)
+    val slateOut = dependencyOps.addRelations(slateWithNodes, relations.flatten)
     slateOut
   }
 

@@ -46,12 +46,12 @@ object SparkleDependencyOps extends DependencyOps[Token, DependencyNode, LeafDep
 
   override def addNodes(slate: StringSlate, nodes: TraversableOnce[DependencyNode]): StringSlate = {
     val nodeSpans = nodes.map(node=>(node.span, node))
-    nodeSpans.foldLeft[StringSlate](slate)((slate, nodeSpan) => slate.append[DependencyNode](nodeSpan._1, nodeSpan._2))
+    slate.addLayer[DependencyNode](nodeSpans)
   }
 
   override def addRelations(slate: StringSlate, relations: TraversableOnce[DependencyRelation]): StringSlate = {
     val relSpans = relations.map(relation=>(relation.span, relation))
-    relSpans.foldLeft[StringSlate](slate)((slate, relSpan) => slate.append[DependencyRelation](relSpan._1, relSpan._2))
+    slate.addLayer[DependencyRelation](relSpans)
   }
 
   override def getHead[In <: DependencyRelation](slate: StringSlate, relation: DependencyRelation): DependencyNode = relation.head
