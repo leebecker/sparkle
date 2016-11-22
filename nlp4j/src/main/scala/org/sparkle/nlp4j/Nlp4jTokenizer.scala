@@ -48,7 +48,7 @@ abstract class Nlp4jTokenizerImplBase[TOKEN](language: Language = Language.ENGLI
     } else {
       // Use window op to extract valid spans for tokenizing
       val spansAndTokens = (for ((windowSpan, window) <- windowOps.get.selectWindows(slate)) yield {
-        val text = slate.content.substring(windowSpan.begin, windowSpan.end)
+        val text = slate.spanned(windowSpan)
         this.processText(text, windowSpan.begin)
       }).flatten
       tokenOps.addTokens(slate, spansAndTokens)
@@ -104,7 +104,7 @@ abstract class Nlp4jSentenceSegmenterAndTokenizerImplBase[SENTENCE, TOKEN](
     } else {
       // run segmenter/tokenizer on windows approved by the window ops
       val sentencesAndTokens = (for ((windowSpan, window) <- windowOps.get.selectWindows(slate)) yield {
-        val text = slate.content.substring(windowSpan.begin, windowSpan.end)
+        val text = slate.spanned(windowSpan)
         this.processText(text, windowSpan.begin)
       }).toSeq
 
