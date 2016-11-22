@@ -2,6 +2,7 @@ package org.sparkle
 
 import org.sparkle.nlp4j.Nlp4jTokenizerWithSparkleTypes
 import edu.emory.mathcs.nlp.common.util.Language
+import org.sparkle.typesystem.ops.WindowOps
 
 /**
   * Package methods for quick creation of NLP4J wrappers
@@ -21,7 +22,9 @@ package object nlp4j {
     */
   def sentenceSegmenterAndTokenizer(language: Language=Language.ENGLISH,
                                     addSentences:Boolean=true,
-                                    addTokens:Boolean=true) = new Nlp4jSentenceSegmenterAndTokenizerWithSparkleTypes(language, addSentences, addTokens)
+                                    addTokens:Boolean=true,
+                                    windowOps: Option[WindowOps[_]]=None) = new Nlp4jSentenceSegmenterAndTokenizerWithSparkleTypes(language, addSentences, addTokens, windowOps)
+
 
   /**
     * Convenience method for creating NLP4J lemmatizer wrapper
