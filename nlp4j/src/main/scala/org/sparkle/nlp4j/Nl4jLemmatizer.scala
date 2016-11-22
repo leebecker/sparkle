@@ -17,7 +17,7 @@ import org.sparkle.typesystem.ops.sparkle.{SparkleLemmaOps, SparklePartOfSpeechO
   * @tparam POSTAG type of annotation containing POS information
   * @tparam LEMMA type of annotation containing lemma information
   */
-abstract class Nlp4jLemmatizerImplBase[TOKEN, POSTAG, LEMMA](language: Language) extends StringAnalysisFunction with Serializable {
+abstract class Nlp4jLemmatizerImplBase[TOKEN, POSTAG, LEMMA](language: Language, windowOps: Option[WindowOps[_]]=None) extends StringAnalysisFunction with Serializable {
   require(language == Language.ENGLISH, s"Language $language unsupported in Sparkle NLP4j Morphological Analyzer Wrapper.")
 
   val tokenOps: TokenOps[TOKEN]
@@ -28,10 +28,17 @@ abstract class Nlp4jLemmatizerImplBase[TOKEN, POSTAG, LEMMA](language: Language)
   // FIXME: Define way to get different models
   lazy val lemmatizer = new EnglishMorphAnalyzer()
 
+
+
   override def apply(slate: StringSlate): StringSlate = {
-    // FIXME: define Window parameter to only select tokens within bounds of certain annotation types
-    // Common use cases include Sentence, Paragraph, Document
-    val tokens = tokenOps.selectAllTokens(slate).toIndexedSeq
+    val tokens = if (windowOps.isEmpty) {
+      // No window ops, get all tokens
+      tokenOps.selectAllTokens(slate).toIndexedSeq
+    } else {
+      // Use window ops to select relevant tokens
+      tokenOps.selectAllTokens(slate).toIndexedSeq
+      windowOps.get.selectWindows(slate).map{ case(windowSpan, window) => tokenOps.selectTokens(slate, windowSpan) }.flatten.toIndexedSeq
+    }
     val tokenStrings = tokens.map{case(tokenSpan, token) => tokenOps.getText(slate, tokenSpan, token)}
 
     // Extract token and POS information
@@ -48,14 +55,13 @@ abstract class Nlp4jLemmatizerImplBase[TOKEN, POSTAG, LEMMA](language: Language)
     val result = lemmaOps.addLemmas(slate, lemmas)
     result
   }
-
 }
 
 /**
   * Define Lemmatizer for Sparkle TypeSystem
   * @param language language code for defining models
   */
-class Nlp4jLemmatizerWithSparkleTypes(language: Language)
+class Nlp4jLemmatizerWithSparkleTypes(language: Language, windowOps: Option[WindowOps[_]]=None)
   extends Nlp4jLemmatizerImplBase[Token, Token, Token](language) {
 
   override val tokenOps: TokenOps[Token] = SparkleTokenOps
