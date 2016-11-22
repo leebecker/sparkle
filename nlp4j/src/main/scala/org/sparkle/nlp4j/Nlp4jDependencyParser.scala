@@ -24,7 +24,8 @@ import org.sparkle.typesystem.syntax.dependency.{DependencyNode, DependencyRelat
   * @tparam ROOT_NODE
   * @tparam RELATION
   */
-abstract class Nlp4jDependencyParserImplBase[SENTENCE, TOKEN, POSTAG, LEMMA, NODE, TOKEN_NODE<:NODE, ROOT_NODE <: NODE, RELATION](language: Language, modelPath: String)
+abstract class Nlp4jDependencyParserImplBase[SENTENCE, TOKEN, POSTAG, LEMMA, NODE, TOKEN_NODE<:NODE, ROOT_NODE <: NODE, RELATION]
+    (language: Language, modelPath: String, windowOps: Option[WindowOps[_]]=None)
   extends StringAnalysisFunction with Serializable {
   require(language == Language.ENGLISH, s"Language $language unsupported in Sparkle NLP4j POS Tagger Wrapper.")
 
@@ -78,7 +79,15 @@ abstract class Nlp4jDependencyParserImplBase[SENTENCE, TOKEN, POSTAG, LEMMA, NOD
 
   override def apply(slate: StringSlate): StringSlate = {
 
-    val sentences = sentenceOps.selectAllSentences(slate).toIndexedSeq
+    val sentences = if (windowOps.isEmpty) {
+      // Get all sentences
+      sentenceOps.selectAllSentences(slate)
+    } else {
+      // Get sentences covered by relevant windows
+      windowOps.get.selectWindows(slate).flatMap{
+        case (windowSpan, window) => sentenceOps.selectSentences(slate, windowSpan)
+      }
+    }
 
     val (nodes, relations) = sentences.toSeq.map(sent=>processSentence(slate, sent._1, sent._2)).unzip
 
