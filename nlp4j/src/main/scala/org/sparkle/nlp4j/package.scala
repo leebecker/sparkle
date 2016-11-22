@@ -13,7 +13,7 @@ package object nlp4j {
     * @param language
     * @return
     */
-  def tokenizer(language: Language = Language.ENGLISH) = new Nlp4jTokenizerWithSparkleTypes(language)
+  def tokenizer(language: Language = Language.ENGLISH, windowOps: Option[WindowOps[_]]=None) = new Nlp4jTokenizerWithSparkleTypes(language)
 
   /**
     * Convenience method for creating NLP4J combined sentence segmenter and tokenizer wrapper

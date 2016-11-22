@@ -17,7 +17,7 @@ import scala.collection.JavaConversions._
   * @param language
   * @tparam TOKEN
   */
-abstract class Nlp4jTokenizerImplBase[TOKEN](language: Language = Language.ENGLISH)
+abstract class Nlp4jTokenizerImplBase[TOKEN](language: Language = Language.ENGLISH, windowOps: Option[WindowOps[_]]=None)
     extends StringAnalysisFunction with Serializable {
 
   require(language == Language.ENGLISH, s"Language $language unsupported in Sparkle NLP4j Tokenizer Wrapper.")
@@ -26,9 +26,7 @@ abstract class Nlp4jTokenizerImplBase[TOKEN](language: Language = Language.ENGLI
 
   lazy val tokenizer = new EnglishTokenizer()
 
-  override def apply(slate: StringSlate): StringSlate =  {
-    // Convert slate text to an input stream and run with NLP4J
-    val text = slate.content
+  def processText(text: String, textOffset: Int): Seq[(Span, TOKEN)] = {
     val tokensAsNlpNodes = tokenizer.tokenize(text)
 
     val spansAndTokens =  tokensAsNlpNodes.map { node =>
@@ -37,8 +35,24 @@ abstract class Nlp4jTokenizerImplBase[TOKEN](language: Language = Language.ENGLI
       (span, token)
     }
 
-    // Create new annotations and add to a flat list
-    tokenOps.addTokens(slate, spansAndTokens)
+    spansAndTokens
+  }
+
+  override def apply(slate: StringSlate): StringSlate =  {
+
+    if (windowOps.isEmpty) {
+      // no window op specified, so run on full text of slate
+      val text = slate.content
+      val spansAndTokens = this.processText(text, 0)
+      tokenOps.addTokens(slate, spansAndTokens)
+    } else {
+      // Use window op to extract valid spans for tokenizing
+      val spansAndTokens = (for ((windowSpan, window) <- windowOps.get.selectWindows(slate)) yield {
+        val text = slate.content.substring(windowSpan.begin, windowSpan.end)
+        this.processText(text, windowSpan.begin)
+      }).flatten
+      tokenOps.addTokens(slate, spansAndTokens)
+    }
   }
 }
 
@@ -88,15 +102,19 @@ abstract class Nlp4jSentenceSegmenterAndTokenizerImplBase[SENTENCE, TOKEN](
       val slateWithSentences = if (addSentences) sentenceOps.addSentences(slate, spansAndSentences) else slate
       if (addTokens) tokenOps.addTokens(slateWithSentences, spansAndTokens) else slateWithSentences
     } else {
-      // Rely on WindowOps to
-      var slateOut: StringSlate = slate
-
-      for ((windowSpan, window) <- windowOps.get.selectWindows(slate)) {
+      // run segmenter/tokenizer on windows approved by the window ops
+      val sentencesAndTokens = (for ((windowSpan, window) <- windowOps.get.selectWindows(slate)) yield {
         val text = slate.content.substring(windowSpan.begin, windowSpan.end)
-        val (spansAndSentences, spansAndTokens) = this.processText(text, windowSpan.begin)
-        if (addSentences) { slateOut = sentenceOps.addSentences(slateOut, spansAndSentences) }
-        if (addTokens) { slateOut = tokenOps.addTokens(slateOut, spansAndTokens) }
-      }
+        this.processText(text, windowSpan.begin)
+      }).toSeq
+
+      // Add annotations to the slate
+      var slateOut: StringSlate = slate
+      val spansAndSentences = sentencesAndTokens.flatMap(windowSentencesAndTokens => windowSentencesAndTokens._1)
+      val spansAndTokens = sentencesAndTokens.flatMap(windowSentencesAndTokens => windowSentencesAndTokens._2)
+      if (addSentences) { slateOut = sentenceOps.addSentences(slateOut, spansAndSentences) }
+      if (addTokens) { slateOut = tokenOps.addTokens(slateOut, spansAndTokens) }
+
       slateOut
     }
   }
@@ -104,7 +122,8 @@ abstract class Nlp4jSentenceSegmenterAndTokenizerImplBase[SENTENCE, TOKEN](
 
 
 
-class Nlp4jTokenizerWithSparkleTypes(language: Language=Language.ENGLISH) extends Nlp4jTokenizerImplBase[Token](language) {
+class Nlp4jTokenizerWithSparkleTypes(language: Language=Language.ENGLISH,
+                                     windowOps: Option[WindowOps[_]]=None) extends Nlp4jTokenizerImplBase[Token](language) {
   override val tokenOps: TokenOps[Token] = SparkleTokenOps
 }
 
