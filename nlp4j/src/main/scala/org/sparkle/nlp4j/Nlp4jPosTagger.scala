@@ -19,7 +19,7 @@ import org.sparkle.typesystem.ops.sparkle.{SparklePartOfSpeechOps, SparkleSenten
   * @tparam TOKEN annotation type containing token information
   * @tparam POSTAG annotation type containing POS tag information
   */
-abstract class Nlp4jPosTaggerImplBase[SENTENCE, TOKEN, POSTAG](language: Language, modelPath: String)
+abstract class Nlp4jPosTaggerImplBase[SENTENCE, TOKEN, POSTAG](language: Language, modelPath: String, windowOps: Option[WindowOps[_]]=None)
     extends StringAnalysisFunction with Serializable {
 
   require(language == Language.ENGLISH, s"Language $language unsupported in Sparkle NLP4j POS Tagger Wrapper.")
@@ -34,7 +34,15 @@ abstract class Nlp4jPosTaggerImplBase[SENTENCE, TOKEN, POSTAG](language: Languag
   lazy val tagger = NLPUtils.getComponent(getClass.getResourceAsStream(modelPath)).asInstanceOf[OnlineComponent[NLPNode, POSState[NLPNode]]]
 
   override def apply(slate: StringSlate): StringSlate = {
-    val sentences = sentenceOps.selectAllSentences(slate)
+    val sentences = if (windowOps.isEmpty) {
+      // Get all sentences
+      sentenceOps.selectAllSentences(slate)
+    } else {
+      // Get sentences covered by relevant windows
+      windowOps.get.selectWindows(slate).flatMap{
+        case (windowSpan, window) => sentenceOps.selectSentences(slate, windowSpan)
+      }
+    }
 
     val posTaggedTokenSpans = sentences.flatMap {
       case (sentenceSpan, sentence) =>
@@ -69,8 +77,8 @@ abstract class Nlp4jPosTaggerImplBase[SENTENCE, TOKEN, POSTAG](language: Languag
   * @param language language code for defining models
   * @param modelPath path to model file
   */
-class Nlp4jPosTaggerWithSparkleTypes(language: Language, modelPath: String)
-    extends Nlp4jPosTaggerImplBase[Sentence, Token, Token](language, modelPath) {
+class Nlp4jPosTaggerWithSparkleTypes(language: Language, modelPath: String, windowOps: Option[WindowOps[_]]=None)
+    extends Nlp4jPosTaggerImplBase[Sentence, Token, Token](language, modelPath, windowOps) {
 
     override val sentenceOps: SentenceOps[Sentence] = SparkleSentenceOps
     override val tokenOps: TokenOps[Token] = SparkleTokenOps
