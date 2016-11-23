@@ -32,6 +32,6 @@ class SimpleWindowOps[WINDOW: ClassTag] extends WindowOps[WINDOW] {
 }
 
 object SimpleWindowOps {
-  def apply[WINDOW] = new SimpleWindowOps[WINDOW]
+  def apply[WINDOW: ClassTag] = new SimpleWindowOps[WINDOW]
 }
 
