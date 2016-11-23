@@ -1,5 +1,6 @@
 package org.sparkle.langdetect
 
+import collection.JavaConverters._
 import com.optimaize.langdetect.{DetectedLanguage, LanguageDetectorBuilder}
 import com.optimaize.langdetect.ngram.NgramExtractors
 import com.optimaize.langdetect.profiles.LanguageProfileReader
@@ -10,9 +11,13 @@ import org.sparkle.typesystem.ops.WindowOps
 /**
   * Created by leebecker on 11/17/16.
   */
-class LanguageDetector(segment: Boolean=false, collapse: Boolean=true, probThreshold: Double=0.6, windowOps: Option[WindowOps[_]]=None) extends StringAnalysisFunction with Serializable {
-
-  val languageProfiles = new LanguageProfileReader().readAllBuiltIn()
+class LanguageDetector(segment: Boolean=false, collapse: Boolean=true, probThreshold: Double=0.6, validLanguages: Option[Set[String]]=None, windowOps: Option[WindowOps[_]]=None) extends StringAnalysisFunction with Serializable {
+  val reader = new LanguageProfileReader()
+  val languageProfiles = if (validLanguages.isEmpty) {
+    reader.readAllBuiltIn()
+  } else {
+    reader.read(validLanguages.get.asJava)
+  }
   val languageDetector = LanguageDetectorBuilder.create(NgramExtractors.standard()).withProfiles(languageProfiles).build()
 
 
@@ -34,7 +39,6 @@ class LanguageDetector(segment: Boolean=false, collapse: Boolean=true, probThres
   val paragraphSplitterRegex = """\n{2,}""".r
 
   def detect(text: String, threshold: Double=0.5): Language = {
-    import collection.JavaConverters._
     val probs = languageDetector.getProbabilities(text).asScala
 
     var maxProb = -1.0d
@@ -88,4 +92,14 @@ class LanguageDetector(segment: Boolean=false, collapse: Boolean=true, probThres
     }
 
   }
+}
+
+object LanguageDetector {
+  def apply(segment: Boolean=false,
+            collapse: Boolean=true,
+            probThreshold: Double=0.6,
+            validLanguages: Option[Set[String]]=None,
+            windowOps: Option[WindowOps[_]]=None
+           ) = new LanguageDetector(segment, collapse, probThreshold, validLanguages, windowOps)
+
 }
