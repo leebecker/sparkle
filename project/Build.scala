@@ -41,8 +41,8 @@ object SparkleBuild extends Build {
   // com.alvinalexander".
 
   lazy val root = Project(id = "sparkle", base = file(".")).
-    aggregate(core, typesystem, util, clearnlp, nlp4j, spark).
-    dependsOn(core, typesystem, util, clearnlp, nlp4j, spark).
+    aggregate(core, typesystem, util, clearnlp, nlp4j, langdetect, spark).
+    dependsOn(core, typesystem, util, clearnlp, nlp4j, langdetect, spark).
     settings(
       aggregate in update := false,
       libraryDependencies ++= SparkConfig.deps.map(_ % "provided"),
@@ -106,6 +106,12 @@ object SparkleBuild extends Build {
     dependsOn(testutil % "test->compile")
 
   lazy val opennlp = Project(id = "sparkle-opennlp", base = file("opennlp")).
+    settings(commonSettings).
+    dependsOn(core % "test->test;compile->compile").
+    dependsOn(typesystem % "test->test;compile->compile").
+    dependsOn(util % "test->test;compile->compile")
+
+  lazy val langdetect = Project(id = "sparkle-langdetect", base = file("langdetect")).
     settings(commonSettings).
     dependsOn(core % "test->test;compile->compile").
     dependsOn(typesystem % "test->test;compile->compile").
